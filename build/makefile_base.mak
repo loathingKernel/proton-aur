@@ -1009,6 +1009,9 @@ $(FFMPEG_CONFIGURE_FILES64): $(FFMPEG)/configure $(MAKEFILE_DEP) | $(FFMPEG_OBJ6
 		$(abspath $(FFMPEG))/configure \
 			--cc=$(CC_QUOTED) --cxx=$(CXX_QUOTED) \
 			--prefix=$(abspath $(TOOLS_DIR64)) \
+			--extra-cflags="$(COMMON_FLAGS)" \
+			--extra-ldflags="$(LDFLAGS)" \
+			--disable-debug \
 			--disable-static \
 			--enable-shared \
 			--disable-programs \
@@ -1044,7 +1047,9 @@ $(FFMPEG_CONFIGURE_FILES32): $(FFMPEG)/configure $(MAKEFILE_DEP) | $(FFMPEG_OBJ3
 		$(abspath $(FFMPEG))/configure \
 			--cc=$(CC_QUOTED) --cxx=$(CXX_QUOTED) \
 			--prefix=$(abspath $(TOOLS_DIR32)) \
-			--extra-cflags=$(FFMPEG_CROSS_CFLAGS) --extra-ldflags=$(FFMPEG_CROSS_LDFLAGS) \
+			--extra-cflags="$(COMMON_FLAGS) -m32" \
+			--extra-ldflags="$(LDFLAGS) -m32" \
+			--disable-debug \
 			--disable-static \
 			--enable-shared \
 			--disable-programs \
@@ -1132,7 +1137,7 @@ $(FAUDIO_CONFIGURE_FILES32): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(FAUDIO_D
 			-DCMAKE_INSTALL_PREFIX="$(abspath $(TOOLS_DIR32))" \
 			-DFFmpeg_INCLUDE_DIR="$(abspath $(TOOLS_DIR32))/include" \
 			$(FAUDIO_CMAKE_FLAGS) \
-			-DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32"
+			-DCMAKE_C_FLAGS="$(COMMON_FLAGS) -m32" -DCMAKE_CXX_FLAGS="$(COMMON_FLAGS) -m32"
 
 $(FAUDIO_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
 $(FAUDIO_CONFIGURE_FILES64): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(FAUDIO_DEPS64) | $(FAUDIO_OBJ64)
@@ -1140,7 +1145,8 @@ $(FAUDIO_CONFIGURE_FILES64): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(FAUDIO_D
 		$(CMAKE_BIN64) $(abspath $(FAUDIO)) \
 			-DCMAKE_INSTALL_PREFIX="$(abspath $(TOOLS_DIR64))" \
 			-DFFmpeg_INCLUDE_DIR="$(abspath $(TOOLS_DIR64))/include" \
-			$(FAUDIO_CMAKE_FLAGS)
+			$(FAUDIO_CMAKE_FLAGS) \
+			-DCMAKE_C_FLAGS="$(COMMON_FLAGS)" -DCMAKE_CXX_FLAGS="$(COMMON_FLAGS)"
 
 faudio32: SHELL = $(CONTAINER_SHELL32)
 faudio32: $(FAUDIO_CONFIGURE_FILES32)
@@ -1832,7 +1838,7 @@ $(VKD3D_CONFIGURE_FILES32): $(MAKEFILE_DEP) $(VULKAN_H32) $(SPIRV_H32) $(VKD3D)/
 		$(abspath $(VKD3D))/configure \
 			--disable-tests \
 			--prefix=$(abspath $(TOOLS_DIR32)) \
-			CFLAGS="-I$(abspath $(TOOLS_DIR32))/include -g $(COMMON_FLAGS) -DNDEBUG" \
+			CFLAGS="-I$(abspath $(TOOLS_DIR32))/include -g $(COMMON_FLAGS) -m32 -DNDEBUG" \
 			LDFLAGS=-L$(abspath $(TOOLS_DIR32))/lib \
 			WIDL="$(abspath $(WINEWIDL32))"
 
