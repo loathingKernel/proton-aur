@@ -141,7 +141,8 @@ else
     MESON_STRIP_ARG := --strip
 endif
 
-OPTIMIZE_FLAGS := -O2 -march=nocona $(call cc-option,$(CC),-mtune=core-avx2,) -mfpmath=sse
+CFLAGS ?= -O2 -march=nocona $(call cc-option,$(CC),-mtune=core-avx2,)
+OPTIMIZE_FLAGS := $(CFLAGS) -mfpmath=sse
 SANITY_FLAGS   := -fwrapv -fno-strict-aliasing
 COMMON_FLAGS   := $(OPTIMIZE_FLAGS) $(SANITY_FLAGS)
 CARGO_BUILD_ARG := --release
