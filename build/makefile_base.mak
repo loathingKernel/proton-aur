@@ -224,6 +224,10 @@ ifneq ($(STEAMRT_PATH),) # Don't build cmake in native mode
 	FAUDIO_DEPS32 += cmake32
 	FAUDIO_DEPS64 += cmake64
 endif # STEAMRT_PATH
+ifeq ($(WITH_FFMPEG),1)
+	FAUDIO_DEPS32 += ffmpeg32
+	FAUDIO_DEPS64 += ffmpeg64
+endif # WITH_FFMPEG
 
 LSTEAMCLIENT := $(SRCDIR)/lsteamclient
 LSTEAMCLIENT32 := ./syn-lsteamclient32/lsteamclient
@@ -1011,7 +1015,6 @@ $(FFMPEG_CONFIGURE_FILES64): $(FFMPEG)/configure $(MAKEFILE_DEP) | $(FFMPEG_OBJ6
 			--disable-doc \
 			--disable-avdevice \
 			--disable-avformat \
-			--disable-swresample \
 			--disable-swscale \
 			--disable-postproc \
 			--disable-avfilter \
@@ -1037,6 +1040,7 @@ $(FFMPEG_CONFIGURE_FILES64): $(FFMPEG)/configure $(MAKEFILE_DEP) | $(FFMPEG_OBJ6
 $(FFMPEG_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL32)
 $(FFMPEG_CONFIGURE_FILES32): $(FFMPEG)/configure $(MAKEFILE_DEP) | $(FFMPEG_OBJ32)
 	cd $(dir $@) && \
+		export PKG_CONFIG_PATH="/usr/lib32/pkgconfig" && \
 		$(abspath $(FFMPEG))/configure \
 			--cc=$(CC_QUOTED) --cxx=$(CXX_QUOTED) \
 			--prefix=$(abspath $(TOOLS_DIR32)) \
@@ -1047,7 +1051,6 @@ $(FFMPEG_CONFIGURE_FILES32): $(FFMPEG)/configure $(MAKEFILE_DEP) | $(FFMPEG_OBJ3
 			--disable-doc \
 			--disable-avdevice \
 			--disable-avformat \
-			--disable-swresample \
 			--disable-swscale \
 			--disable-postproc \
 			--disable-avfilter \
@@ -1090,14 +1093,14 @@ ffmpeg64: $(FFMPEG_CONFIGURE_FILES64)
 	+$(MAKE) -C $(FFMPEG_OBJ64)
 	+$(MAKE) -C $(FFMPEG_OBJ64) install
 	mkdir -pv $(DST_DIR)/lib64
-	cp -a $(TOOLS_DIR64)/lib/{libavcodec,libavutil}* $(DST_DIR)/lib64
+	cp -a $(TOOLS_DIR64)/lib/{libavcodec,libavutil,libswresample}* $(DST_DIR)/lib64
 
 ffmpeg32: SHELL = $(CONTAINER_SHELL32)
 ffmpeg32: $(FFMPEG_CONFIGURE_FILES32)
 	+$(MAKE) -C $(FFMPEG_OBJ32)
 	+$(MAKE) -C $(FFMPEG_OBJ32) install
 	mkdir -pv $(DST_DIR)/lib
-	cp -a $(TOOLS_DIR32)/lib/{libavcodec,libavutil}* $(DST_DIR)/lib
+	cp -a $(TOOLS_DIR32)/lib/{libavcodec,libavutil,libswresample}* $(DST_DIR)/lib
 
 endif # ifeq ($(WITH_FFMPEG),1)
 
@@ -1127,6 +1130,7 @@ $(FAUDIO_CONFIGURE_FILES32): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(FAUDIO_D
 	cd $(dir $@) && \
 		$(CMAKE_BIN32) $(abspath $(FAUDIO)) \
 			-DCMAKE_INSTALL_PREFIX="$(abspath $(TOOLS_DIR32))" \
+			-DFFmpeg_INCLUDE_DIR="$(abspath $(TOOLS_DIR32))/include" \
 			$(FAUDIO_CMAKE_FLAGS) \
 			-DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32"
 
@@ -1135,6 +1139,7 @@ $(FAUDIO_CONFIGURE_FILES64): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(FAUDIO_D
 	cd $(dir $@) && \
 		$(CMAKE_BIN64) $(abspath $(FAUDIO)) \
 			-DCMAKE_INSTALL_PREFIX="$(abspath $(TOOLS_DIR64))" \
+			-DFFmpeg_INCLUDE_DIR="$(abspath $(TOOLS_DIR64))/include" \
 			$(FAUDIO_CMAKE_FLAGS)
 
 faudio32: SHELL = $(CONTAINER_SHELL32)
@@ -1338,7 +1343,7 @@ $(WINE_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINE_DEPS64) $(WINE_OBJ64)
 			$(WINE_BISON64) \
 			CFLAGS="-I$(abspath $(TOOLS_DIR64))/include -g $(COMMON_FLAGS)" \
 			CXXFLAGS="-I$(abspath $(TOOLS_DIR64))/include -g $(COMMON_FLAGS) -std=c++17" \
-			LDFLAGS=-L$(abspath $(TOOLS_DIR64))/lib \
+			LDFLAGS="-L$(abspath $(TOOLS_DIR64))/lib -Wl,-rpath-link,$(abspath $(TOOLS_DIR64))/lib" \
 			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR64))/lib/pkgconfig:/usr/lib/pkgconfig \
 			CC=$(CC_QUOTED) \
 			CXX=$(CXX_QUOTED)
@@ -1356,7 +1361,7 @@ $(WINE_CONFIGURE_FILES32): $(MAKEFILE_DEP) | $(WINE_DEPS32) $(WINE_OBJ32)
 			$(WINE_BISON32) \
 			CFLAGS="-I$(abspath $(TOOLS_DIR32))/include -g $(COMMON_FLAGS)" \
 			CXXFLAGS="-I$(abspath $(TOOLS_DIR32))/include -g $(COMMON_FLAGS) -std=c++17" \
-			LDFLAGS=-L$(abspath $(TOOLS_DIR32))/lib \
+			LDFLAGS="-L$(abspath $(TOOLS_DIR32))/lib -Wl,-rpath-link,$(abspath $(TOOLS_DIR32))/lib" \
 			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig:/usr/lib32/pkgconfig \
 			CC=$(CC_QUOTED) \
 			CXX=$(CXX_QUOTED)
@@ -1780,7 +1785,7 @@ $(WINEWIDL_CONFIGURE_FILES32): $(MAKEFILE_DEP) | $(WINEWIDL_OBJ32) $(WINEWIDL_DE
 			STRIP=$(STRIP_QUOTED) \
 			$(WINE_BISON32) \
 			CFLAGS=-I$(abspath $(TOOLS_DIR32))"/include -g $(COMMON_FLAGS)" \
-			LDFLAGS=-L$(abspath $(TOOLS_DIR32))/lib \
+			LDFLAGS="-L$(abspath $(TOOLS_DIR32))/lib -Wl,-rpath-link,$(abspath $(TOOLS_DIR32))/lib" \
 			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig:/usr/lib32/pkgconfig \
 			CC=$(CC_QUOTED) \
 			CXX=$(CXX_QUOTED)
@@ -1801,7 +1806,7 @@ $(WINEWIDL_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINEWIDL_OBJ64) $(WINEWIDL_DE
 			STRIP=$(STRIP_QUOTED) \
 			$(WINE_BISON64) \
 			CFLAGS=-I$(abspath $(TOOLS_DIR64))"/include -g $(COMMON_FLAGS)" \
-			LDFLAGS=-L$(abspath $(TOOLS_DIR64))/lib \
+			LDFLAGS="-L$(abspath $(TOOLS_DIR64))/lib -Wl,-rpath-link,$(abspath $(TOOLS_DIR64))/lib" \
 			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR64))/lib/pkgconfig:/usr/lib/pkgconfig \
 			CC=$(CC_QUOTED) \
 			CXX=$(CXX_QUOTED)
