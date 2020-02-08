@@ -243,8 +243,8 @@ WINEMAKER := $(abspath $(WINE)/tools/winemaker/winemaker)
 WINE_DEPS32 := faudio32 vkd3d32
 WINE_DEPS64 := faudio64 vkd3d64
 ifneq ($(STEAMRT_PATH),) # Don't build gstreamer/bison in native mode
-	WINE_DEPS32 += bison32
-	WINE_DEPS64 += bison64
+	WINE_DEPS32 += gst_base32 bison32
+	WINE_DEPS64 += gst_base64 bison64
 endif # STEAMRT_PATH
 
 # Wine outputs that need to exist for other steps (dist)
@@ -434,7 +434,10 @@ DIST_GECKO64 := $(DIST_GECKO_DIR)/wine-gecko-$(GECKO_VER)-x86_64
 DIST_WINEMONO_DIR := $(DST_DIR)/share/wine/mono
 DIST_WINEMONO := $(DIST_WINEMONO_DIR)/wine-mono-$(WINEMONO_VER)
 DIST_FONTS := $(DST_DIR)/share/fonts
-DIST_DEPS := wine gst_good vrclient lsteamclient steam
+DIST_DEPS := wine vrclient lsteamclient steam
+ifneq ($(STEAMRT_PATH),) # Don't build gstreamer in native mode
+	DIST_DEPS += gst_good
+endif # STEAMRT_PATH
 ifneq ($(NO_DXVK),1) # May be disabled by configure
 	DIST_DEPS += dxvk
 endif # NO_DXVK
@@ -572,6 +575,8 @@ module64:
 	+$(MAKE) -C $(WINE_OBJ64)/dlls/$(module)
 
 module: module32 module64
+
+ifneq ($(STEAMRT_PATH),) # Don't build gstreamer in native mode
 
 ##
 ## glib
@@ -982,6 +987,7 @@ gst_good32: $(GST_GOOD_CONFIGURE_FILES32)
 	cp -a $(TOOLS_DIR32)/lib/libgst* $(DST_DIR)/lib/ && \
 	cp -a $(TOOLS_DIR32)/lib/gstreamer-1.0 $(DST_DIR)/lib/
 
+endif # ifneq ($(STEAMRT_PATH),)
 
 ##
 ## ffmpeg
@@ -1320,9 +1326,10 @@ WINE32_MAKE_ARGS := \
 
 # 64bit-configure
 $(WINE_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
-$(WINE_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINE_DEPS64) gst_base64 $(WINE_OBJ64)
+$(WINE_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINE_DEPS64) $(WINE_OBJ64)
 	cd $(dir $@) && \
 		../$(WINE)/configure \
+			--with-gstreamer \
 			--without-curses \
 			--enable-win64 \
 			--disable-tests \
@@ -1332,15 +1339,16 @@ $(WINE_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINE_DEPS64) gst_base64 $(WINE_OB
 			CFLAGS="-I$(abspath $(TOOLS_DIR64))/include -g $(COMMON_FLAGS)" \
 			CXXFLAGS="-I$(abspath $(TOOLS_DIR64))/include -g $(COMMON_FLAGS) -std=c++17" \
 			LDFLAGS=-L$(abspath $(TOOLS_DIR64))/lib \
-			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR64))/lib/pkgconfig \
+			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR64))/lib/pkgconfig:/usr/lib/pkgconfig \
 			CC=$(CC_QUOTED) \
 			CXX=$(CXX_QUOTED)
 
 # 32-bit configure
 $(WINE_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL32)
-$(WINE_CONFIGURE_FILES32): $(MAKEFILE_DEP) | $(WINE_DEPS32) gst_base32 $(WINE_OBJ32)
+$(WINE_CONFIGURE_FILES32): $(MAKEFILE_DEP) | $(WINE_DEPS32) $(WINE_OBJ32)
 	cd $(dir $@) && \
 		../$(WINE)/configure \
+			--with-gstreamer \
 			--without-curses \
 			--disable-tests \
 			--prefix=$(abspath $(WINE_DST32)) \
@@ -1349,7 +1357,7 @@ $(WINE_CONFIGURE_FILES32): $(MAKEFILE_DEP) | $(WINE_DEPS32) gst_base32 $(WINE_OB
 			CFLAGS="-I$(abspath $(TOOLS_DIR32))/include -g $(COMMON_FLAGS)" \
 			CXXFLAGS="-I$(abspath $(TOOLS_DIR32))/include -g $(COMMON_FLAGS) -std=c++17" \
 			LDFLAGS=-L$(abspath $(TOOLS_DIR32))/lib \
-			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig \
+			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig:/usr/lib32/pkgconfig \
 			CC=$(CC_QUOTED) \
 			CXX=$(CXX_QUOTED)
 
@@ -1766,13 +1774,14 @@ $(WINEWIDL_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL32)
 $(WINEWIDL_CONFIGURE_FILES32): $(MAKEFILE_DEP) | $(WINEWIDL_OBJ32) $(WINEWIDL_DEPS32)
 	cd $(dir $@) && \
 		../$(WINE)/configure \
+			--with-gstreamer \
 			--without-curses \
 			--disable-tests \
 			STRIP=$(STRIP_QUOTED) \
 			$(WINE_BISON32) \
 			CFLAGS=-I$(abspath $(TOOLS_DIR32))"/include -g $(COMMON_FLAGS)" \
 			LDFLAGS=-L$(abspath $(TOOLS_DIR32))/lib \
-			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig \
+			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig:/usr/lib32/pkgconfig \
 			CC=$(CC_QUOTED) \
 			CXX=$(CXX_QUOTED)
 
@@ -1785,6 +1794,7 @@ $(WINEWIDL_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
 $(WINEWIDL_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINEWIDL_OBJ64) $(WINEWIDL_DEPS64)
 	cd $(dir $@) && \
 		../$(WINE)/configure \
+			--with-gstreamer \
 			--without-curses \
 			--enable-win64 \
 			--disable-tests \
@@ -1792,7 +1802,7 @@ $(WINEWIDL_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINEWIDL_OBJ64) $(WINEWIDL_DE
 			$(WINE_BISON64) \
 			CFLAGS=-I$(abspath $(TOOLS_DIR64))"/include -g $(COMMON_FLAGS)" \
 			LDFLAGS=-L$(abspath $(TOOLS_DIR64))/lib \
-			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR64))/lib/pkgconfig \
+			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR64))/lib/pkgconfig:/usr/lib/pkgconfig \
 			CC=$(CC_QUOTED) \
 			CXX=$(CXX_QUOTED)
 
