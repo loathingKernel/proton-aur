@@ -88,13 +88,13 @@ endif
 
 ifneq ($(STEAMRT_IMAGE),)
 SUBMAKE_JOBS ?= 36
-MAKE := make -j$(SUBMAKE_JOBS)
 CONTAINER_SHELL := $(DOCKER_BASE) /bin/bash
 STEAM_RUNTIME_RUNSH := $(DOCKER_BASE)
 else
 CONTAINER_SHELL := $(SHELL)
 STEAM_RUNTIME_RUNSH :=
 endif
+MAKE := make -j$(SUBMAKE_JOBS)
 
 .PHONY: test-container
 test-container:
