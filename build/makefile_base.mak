@@ -1238,7 +1238,12 @@ $(WINE_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL)
 $(WINE_CONFIGURE_FILES64): $(MAKEFILE_DEP) | faudio64 jxrlib64 gst_base64 $(WINE_OBJ64)
 	cd $(dir $@) && \
 		../$(WINE)/configure \
+			--with-x \
+			--with-gstreamer \
 			--without-curses \
+			--without-oss \
+			--disable-winemenubuilder \
+			--disable-win16 \
 			--enable-win64 \
 			--disable-tests \
 			--prefix=$(abspath $(DST_DIR)) \
@@ -1259,7 +1264,12 @@ $(WINE_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL)
 $(WINE_CONFIGURE_FILES32): $(MAKEFILE_DEP) | faudio32 jxrlib32 gst_base32 $(WINE_OBJ32)
 	cd $(dir $@) && \
 		../$(WINE)/configure \
+			--with-x \
+			--with-gstreamer \
 			--without-curses \
+			--without-oss \
+			--disable-winemenubuilder \
+			--disable-win16 \
 			--disable-tests \
 			--prefix=$(abspath $(WINE_DST32)) \
 			LD_LIBRARY_PATH=$(abspath $(TOOLS_DIR32))/lib \
