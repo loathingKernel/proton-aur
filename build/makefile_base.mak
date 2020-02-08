@@ -236,9 +236,11 @@ WINE_OUT_SERVER := $(DST_DIR)/bin/wineserver
 WINE_OUT := $(WINE_OUT_BIN) $(WINE_OUT_SERVER)
 # Tool-only build outputs needed for other projects
 WINEGCC32 := $(TOOLS_DIR32)/bin/winegcc
+WINEGXX32 := $(TOOLS_DIR32)/bin/wineg++
 WINEBUILD32 := $(TOOLS_DIR32)/bin/winebuild
 WINE_BUILDTOOLS32 := $(WINEGCC32) $(WINEBUILD32)
 WINEGCC64 := $(TOOLS_DIR64)/bin/winegcc
+WINEGXX64 := $(TOOLS_DIR64)/bin/wineg++
 WINEBUILD64 := $(TOOLS_DIR64)/bin/winebuild
 WINE_BUILDTOOLS64 := $(WINEGCC64) $(WINEBUILD64)
 
@@ -1425,7 +1427,7 @@ $(DXVK_CONFIGURE_FILES64): $(MAKEFILE_DEP) $(DXVK)/build-win64.txt wineopenxr64 
 	fi
 	cd "$(abspath $(DXVK))" && \
 	PATH="$(abspath $(SRCDIR))/glslang/bin/:$(PATH)" \
-		meson --prefix="$(abspath $(DXVK_OBJ64))" --cross-file "$(abspath $(DXVK))/build-win64.txt" $(MESON_STRIP_ARG) --buildtype=release "$(abspath $(DXVK_OBJ64))"
+		meson --prefix="$(abspath $(DXVK_OBJ64))" --cross-file "$(abspath $(DXVK))/build-win64.txt" $(MESON_STRIP_ARG) --optimization=3 --buildtype=release "$(abspath $(DXVK_OBJ64))"
 
 # 32-bit configure.  Remove coredata file if already configured (due to e.g. makefile changing)
 $(DXVK_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL)
@@ -1435,7 +1437,7 @@ $(DXVK_CONFIGURE_FILES32): $(MAKEFILE_DEP) $(DXVK)/build-win32.txt | $(DXVK_OBJ3
 	fi
 	cd "$(abspath $(DXVK))" && \
 	PATH="$(abspath $(SRCDIR))/glslang/bin/:$(PATH)" \
-		meson --prefix="$(abspath $(DXVK_OBJ32))" --cross-file "$(abspath $(DXVK))/build-win32.txt" $(MESON_STRIP_ARG) --buildtype=release "$(abspath $(DXVK_OBJ32))"
+		meson --prefix="$(abspath $(DXVK_OBJ32))" --cross-file "$(abspath $(DXVK))/build-win32.txt" $(MESON_STRIP_ARG) --optimization=3 --buildtype=release "$(abspath $(DXVK_OBJ32))"
 
 ## dxvk goals
 DXVK_TARGETS = dxvk dxvk_configure dxvk32 dxvk64 dxvk_configure32 dxvk_configure64
@@ -1455,7 +1457,7 @@ dxvk: dxvk32 dxvk64
 
 dxvk64: SHELL = $(CONTAINER_SHELL)
 dxvk64: $(DXVK_CONFIGURE_FILES64)
-	env PATH="$(abspath $(SRCDIR))/glslang/bin/:$(PATH)" ninja -C "$(DXVK_OBJ64)" install
+	env PATH="$(abspath $(SRCDIR))/glslang/bin/:$(PATH)" ninja -C "$(DXVK_OBJ64)" -v install
 	mkdir -p "$(DST_DIR)/lib64/wine/dxvk"
 	cp -f "$(DXVK_OBJ64)"/bin/dxgi.dll "$(DST_DIR)"/lib64/wine/dxvk
 	cp -f "$(DXVK_OBJ64)"/bin/d3d11.dll "$(DST_DIR)"/lib64/wine/dxvk
@@ -1469,7 +1471,7 @@ dxvk64: $(DXVK_CONFIGURE_FILES64)
 
 dxvk32: SHELL = $(CONTAINER_SHELL)
 dxvk32: $(DXVK_CONFIGURE_FILES32)
-	env PATH="$(abspath $(SRCDIR))/glslang/bin/:$(PATH)" ninja -C "$(DXVK_OBJ32)" install
+	env PATH="$(abspath $(SRCDIR))/glslang/bin/:$(PATH)" ninja -C "$(DXVK_OBJ32)" -v install
 	mkdir -p "$(DST_DIR)"/lib/wine/dxvk
 	cp -f "$(DXVK_OBJ32)"/bin/dxgi.dll "$(DST_DIR)"/lib/wine/dxvk/
 	cp -f "$(DXVK_OBJ32)"/bin/d3d11.dll "$(DST_DIR)"/lib/wine/dxvk/
