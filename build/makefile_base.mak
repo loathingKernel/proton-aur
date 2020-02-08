@@ -218,6 +218,12 @@ GST_GOOD_OBJ64 := ./obj-gst-good64
 FAUDIO := $(SRCDIR)/FAudio
 FAUDIO_OBJ32 := ./obj-faudio32
 FAUDIO_OBJ64 := ./obj-faudio64
+FAUDIO_DEPS32 :=
+FAUDIO_DEPS64 :=
+ifneq ($(STEAMRT_PATH),) # Don't build cmake in native mode
+	FAUDIO_DEPS32 += cmake32
+	FAUDIO_DEPS64 += cmake64
+endif # STEAMRT_PATH
 
 LSTEAMCLIENT := $(SRCDIR)/lsteamclient
 LSTEAMCLIENT32 := ./syn-lsteamclient32/lsteamclient
@@ -268,22 +274,38 @@ VULKAN_H_OBJ32 := ./obj-vulkan-headers32
 VULKAN_H_OBJ64 := ./obj-vulkan-headers64
 VULKAN_H32 := $(TOOLS_DIR32)/include/vulkan/vulkan.h
 VULKAN_H64 := $(TOOLS_DIR64)/include/vulkan/vulkan.h
+VULKAN_H_DEPS32 :=
+VULKAN_H_DEPS64 :=
+ifneq ($(STEAMRT_PATH),) # Don't build cmake in native mode
+	VULKAN_H_DEPS32 += cmake32
+	VULKAN_H_DEPS64 += cmake64
+endif # STEAMRT_PATH
 
 SPIRV_HEADERS := $(SRCDIR)/SPIRV-Headers
 SPIRV_H_OBJ32 := ./obj-spirv-headers32
 SPIRV_H_OBJ64 := ./obj-spirv-headers64
 SPIRV_H32 := $(TOOLS_DIR32)/include/spirv/spirv.h
 SPIRV_H64 := $(TOOLS_DIR64)/include/spirv/spirv.h
+SPIRV_H_DEPS32 :=
+SPIRV_H_DEPS64 :=
+ifneq ($(STEAMRT_PATH),) # Don't build cmake in native mode
+	SPIRV_H_DEPS32 += cmake32
+	SPIRV_H_DEPS64 += cmake64
+endif # STEAMRT_PATH
 
 VKD3D := $(SRCDIR)/vkd3d
 VKD3D_OBJ32 := ./obj-vkd3d32
 VKD3D_OBJ64 := ./obj-vkd3d64
 
+CMAKE_BIN32 := cmake
+CMAKE_BIN64 := cmake
+ifneq ($(STEAMRT_PATH),) # Don't build cmake in native mode
 CMAKE := $(SRCDIR)/cmake
 CMAKE_OBJ32 := ../obj-cmake32
 CMAKE_OBJ64 := ../obj-cmake64
 CMAKE_BIN32 := $(CMAKE_OBJ32)/built/bin/cmake
 CMAKE_BIN64 := $(CMAKE_OBJ64)/built/bin/cmake
+endif # STEAMRT_PATH
 
 BISON_VER = 3.3.2
 BISON_TARBALL := bison-$(BISON_VER).tar.xz
@@ -1075,7 +1097,7 @@ FAUDIO_CONFIGURE_FILES32 := $(FAUDIO_OBJ32)/Makefile
 FAUDIO_CONFIGURE_FILES64 := $(FAUDIO_OBJ64)/Makefile
 
 $(FAUDIO_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL32)
-$(FAUDIO_CONFIGURE_FILES32): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(CMAKE_BIN32) | $(FAUDIO_OBJ32)
+$(FAUDIO_CONFIGURE_FILES32): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(FAUDIO_DEPS32) | $(FAUDIO_OBJ32)
 	cd $(dir $@) && \
 		$(CMAKE_BIN32) $(abspath $(FAUDIO)) \
 			-DCMAKE_INSTALL_PREFIX="$(abspath $(TOOLS_DIR32))" \
@@ -1083,7 +1105,7 @@ $(FAUDIO_CONFIGURE_FILES32): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(CMAKE_BI
 			-DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32"
 
 $(FAUDIO_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
-$(FAUDIO_CONFIGURE_FILES64): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(CMAKE_BIN64) | $(FAUDIO_OBJ64)
+$(FAUDIO_CONFIGURE_FILES64): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(FAUDIO_DEPS64) | $(FAUDIO_OBJ64)
 	cd $(dir $@) && \
 		$(CMAKE_BIN64) $(abspath $(FAUDIO)) \
 			-DCMAKE_INSTALL_PREFIX="$(abspath $(TOOLS_DIR64))" \
@@ -1462,6 +1484,8 @@ vrclient32: $(VRCLIENT_CONFIGURE_FILES32) | $(WINE_BUILDTOOLS32) $(filter $(MAKE
 
 ## Create & configure object directory for cmake
 
+ifneq ($(STEAMRT_PATH),) # Don't build cmake in native mode
+
 CMAKE_CONFIGURE_FILES32 := $(CMAKE_OBJ32)/Makefile
 CMAKE_CONFIGURE_FILES64 := $(CMAKE_OBJ64)/Makefile
 
@@ -1512,6 +1536,8 @@ cmake32-intermediate: $(CMAKE_CONFIGURE_FILES32) $(filter $(MAKECMDGOALS),cmake3
 	+$(MAKE) -C $(CMAKE_OBJ32)
 	+$(MAKE) -C $(CMAKE_OBJ32) install
 	touch $(CMAKE_BIN32)
+
+endif # ifneq ($(STEAMRT_PATH),)
 
 ##
 ## bison -- necessary for wine, steam runtime version too old
@@ -1663,12 +1689,12 @@ VULKAN_H_CONFIGURE_FILES32 := $(VULKAN_H_OBJ32)/Makefile
 VULKAN_H_CONFIGURE_FILES64 := $(VULKAN_H_OBJ64)/Makefile
 
 $(VULKAN_H_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL32)
-$(VULKAN_H_CONFIGURE_FILES32): $(MAKEFILE_DEP) $(CMAKE_BIN32) $(VULKAN_HEADERS)/CMakeLists.txt | $(VULKAN_H_OBJ32)
+$(VULKAN_H_CONFIGURE_FILES32): $(MAKEFILE_DEP) $(VULKAN_H_DEPS32) $(VULKAN_HEADERS)/CMakeLists.txt | $(VULKAN_H_OBJ32)
 	cd $(abspath $(VULKAN_H_OBJ32)) && \
 	$(CMAKE_BIN32) -DCMAKE_INSTALL_PREFIX=$(abspath $(TOOLS_DIR32)) $(abspath $(VULKAN_HEADERS))
 
 $(VULKAN_H_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
-$(VULKAN_H_CONFIGURE_FILES64): $(MAKEFILE_DEP) $(CMAKE_BIN64) $(VULKAN_HEADERS)/CMakeLists.txt | $(VULKAN_H_OBJ64)
+$(VULKAN_H_CONFIGURE_FILES64): $(MAKEFILE_DEP) $(VULKAN_H_DEPS64) $(VULKAN_HEADERS)/CMakeLists.txt | $(VULKAN_H_OBJ64)
 	cd $(abspath $(VULKAN_H_OBJ64)) && \
 	$(CMAKE_BIN64) -DCMAKE_INSTALL_PREFIX=$(abspath $(TOOLS_DIR64)) $(abspath $(VULKAN_HEADERS))
 
@@ -1688,12 +1714,12 @@ SPIRV_H_CONFIGURE_FILES32 := $(SPIRV_H_OBJ32)/Makefile
 SPIRV_H_CONFIGURE_FILES64 := $(SPIRV_H_OBJ64)/Makefile
 
 $(SPIRV_H_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL32)
-$(SPIRV_H_CONFIGURE_FILES32): $(MAKEFILE_DEP) $(CMAKE_BIN32) $(SPIRV_HEADERS)/CMakeLists.txt | $(SPIRV_H_OBJ32)
+$(SPIRV_H_CONFIGURE_FILES32): $(MAKEFILE_DEP) $(SPIRV_H_DEPS32) $(SPIRV_HEADERS)/CMakeLists.txt | $(SPIRV_H_OBJ32)
 	cd $(abspath $(SPIRV_H_OBJ32)) && \
 	$(CMAKE_BIN32) -DCMAKE_INSTALL_PREFIX=$(abspath $(TOOLS_DIR32)) $(abspath $(SPIRV_HEADERS))
 
 $(SPIRV_H_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
-$(SPIRV_H_CONFIGURE_FILES64): $(MAKEFILE_DEP) $(CMAKE_BIN64) $(SPIRV_HEADERS)/CMakeLists.txt | $(SPIRV_H_OBJ64)
+$(SPIRV_H_CONFIGURE_FILES64): $(MAKEFILE_DEP) $(SPIRV_H_DEPS64) $(SPIRV_HEADERS)/CMakeLists.txt | $(SPIRV_H_OBJ64)
 	cd $(abspath $(SPIRV_H_OBJ64)) && \
 	$(CMAKE_BIN64) -DCMAKE_INSTALL_PREFIX=$(abspath $(TOOLS_DIR64)) $(abspath $(SPIRV_HEADERS))
 
