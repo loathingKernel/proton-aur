@@ -932,6 +932,11 @@ class Session:
 
 
 if __name__ == "__main__":
+    if "PROTON_USER_COMPAT_DATA" in os.environ:
+        if nonzero(os.environ["PROTON_USER_COMPAT_DATA"]):
+            os.environ["STEAM_COMPAT_DATA_PATH"] = os.environ["STEAM_COMPAT_CLIENT_INSTALL_PATH"] + "/steamapps/compatdata/" + os.environ["SteamGameId"]
+            if not os.path.exists(os.environ["STEAM_COMPAT_DATA_PATH"]):
+                os.makedirs(os.environ["STEAM_COMPAT_DATA_PATH"])
     if not "STEAM_COMPAT_DATA_PATH" in os.environ:
         log("No compat data path?")
         sys.exit(1)
