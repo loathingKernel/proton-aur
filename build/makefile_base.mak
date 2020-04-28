@@ -89,8 +89,8 @@ SELECT_DOCKER_IMAGE :=
 # controllable by SUBMAKE_JOBS.  Not ideal.
 ifneq ($(CONTAINER_SHELL32)$(CONTAINER_SHELL64),)
 	SUBMAKE_JOBS ?= 36
-	MAKE := make -j$(SUBMAKE_JOBS)
 endif
+MAKE := make -j$(SUBMAKE_JOBS)
 
 # Use default shell if no STEAMRT_ variables setup a container to invoke.  Commands will just run natively.
 ifndef CONTAINER_SHELL64
