@@ -275,8 +275,8 @@ VKD3D_OBJ32 := ./obj-vkd3d32
 VKD3D_OBJ64 := ./obj-vkd3d64
 
 CMAKE := $(SRCDIR)/cmake
-CMAKE_OBJ32 := ./obj-cmake32
-CMAKE_OBJ64 := ./obj-cmake64
+CMAKE_OBJ32 := ../obj-cmake32
+CMAKE_OBJ64 := ../obj-cmake64
 CMAKE_BIN32 := $(CMAKE_OBJ32)/built/bin/cmake
 CMAKE_BIN64 := $(CMAKE_OBJ64)/built/bin/cmake
 
@@ -1329,7 +1329,7 @@ FAUDIO_CONFIGURE_FILES64 := $(FAUDIO_OBJ64)/Makefile
 $(FAUDIO_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL32)
 $(FAUDIO_CONFIGURE_FILES32): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(CMAKE_BIN32) | $(FAUDIO_OBJ32)
 	cd $(dir $@) && \
-		../$(CMAKE_BIN32) $(abspath $(FAUDIO)) \
+		$(CMAKE_BIN32) $(abspath $(FAUDIO)) \
 			-DCMAKE_INSTALL_PREFIX="$(abspath $(TOOLS_DIR32))" \
 			$(FAUDIO_CMAKE_FLAGS) \
 			-DFFmpeg_INCLUDE_DIR="$(abspath $(TOOLS_DIR32))/include" \
@@ -1338,7 +1338,7 @@ $(FAUDIO_CONFIGURE_FILES32): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(CMAKE_BI
 $(FAUDIO_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
 $(FAUDIO_CONFIGURE_FILES64): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(CMAKE_BIN64) | $(FAUDIO_OBJ64)
 	cd $(dir $@) && \
-		../$(CMAKE_BIN64) $(abspath $(FAUDIO)) \
+		$(CMAKE_BIN64) $(abspath $(FAUDIO)) \
 			-DCMAKE_INSTALL_PREFIX="$(abspath $(TOOLS_DIR64))" \
 			$(FAUDIO_CMAKE_FLAGS) \
 			-DFFmpeg_INCLUDE_DIR="$(abspath $(TOOLS_DIR64))/include"
