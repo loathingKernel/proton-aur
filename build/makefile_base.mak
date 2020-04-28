@@ -275,8 +275,8 @@ VKD3D_OBJ32 := ./obj-vkd3d32
 VKD3D_OBJ64 := ./obj-vkd3d64
 
 CMAKE := $(SRCDIR)/cmake
-CMAKE_OBJ32 := ./obj-cmake32
-CMAKE_OBJ64 := ./obj-cmake64
+CMAKE_OBJ32 := ../obj-cmake32
+CMAKE_OBJ64 := ../obj-cmake64
 CMAKE_BIN32 := $(CMAKE_OBJ32)/built/bin/cmake
 CMAKE_BIN64 := $(CMAKE_OBJ64)/built/bin/cmake
 
@@ -1327,7 +1327,7 @@ $(FAUDIO_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL32)
 $(FAUDIO_CONFIGURE_FILES32): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(CMAKE_BIN32) | gst_base32 $(FAUDIO_OBJ32)
 	cd $(dir $@) && \
 		PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig \
-		../$(CMAKE_BIN32) $(abspath $(FAUDIO)) \
+		$(CMAKE_BIN32) $(abspath $(FAUDIO)) \
 			-DCMAKE_EXE_LINKER_FLAGS_INIT="-L$(abspath $(TOOLS_DIR32))/lib" \
 			-DCMAKE_SHARED_LINKER_FLAGS_INIT="-L$(abspath $(TOOLS_DIR32))/lib:$(abspath $(TOOLS_DIR32))/lib/gstreamer-1.0 -Wl,-rpath-link,$(abspath $(TOOLS_DIR32))/lib:$(abspath $(TOOLS_DIR32))/lib/gstreamer-1.0" \
 			-DCMAKE_MODULE_LINKER_FLAGS_INIT="-L$(abspath $(TOOLS_DIR32))/lib:$(abspath $(TOOLS_DIR32))/lib/gstreamer-1.0 -Wl,-rpath-link,$(abspath $(TOOLS_DIR32))/lib:$(abspath $(TOOLS_DIR32))/lib/gstreamer-1.0" \
@@ -1339,7 +1339,7 @@ $(FAUDIO_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
 $(FAUDIO_CONFIGURE_FILES64): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(CMAKE_BIN64) | gst_base64 $(FAUDIO_OBJ64)
 	cd $(dir $@) && \
 		PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR64))/lib/pkgconfig \
-		../$(CMAKE_BIN64) $(abspath $(FAUDIO)) \
+		$(CMAKE_BIN64) $(abspath $(FAUDIO)) \
 			-DCMAKE_EXE_LINKER_FLAGS_INIT="-L$(abspath $(TOOLS_DIR64))/lib" \
 			-DCMAKE_SHARED_LINKER_FLAGS_INIT="-L$(abspath $(TOOLS_DIR64))/lib:$(abspath $(TOOLS_DIR64))/lib/gstreamer-1.0 -Wl,-rpath-link,$(abspath $(TOOLS_DIR64))/lib:$(abspath $(TOOLS_DIR64))/lib/gstreamer-1.0" \
 			-DCMAKE_MODULE_LINKER_FLAGS_INIT="-L$(abspath $(TOOLS_DIR64))/lib:$(abspath $(TOOLS_DIR64))/lib/gstreamer-1.0 -Wl,-rpath-link,$(abspath $(TOOLS_DIR64))/lib:$(abspath $(TOOLS_DIR64))/lib/gstreamer-1.0" \
