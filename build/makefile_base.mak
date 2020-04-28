@@ -228,6 +228,12 @@ GST_LIBAV_OBJ64 := ./obj-gst-libav64
 FAUDIO := $(SRCDIR)/FAudio
 FAUDIO_OBJ32 := ./obj-faudio32
 FAUDIO_OBJ64 := ./obj-faudio64
+FAUDIO_DEPS32 := gst_base32
+FAUDIO_DEPS64 := gst_base64
+ifneq ($(STEAMRT_PATH),) # Don't build cmake in native mode
+	FAUDIO_DEPS32 += cmake32
+	FAUDIO_DEPS64 += cmake64
+endif # STEAMRT_PATH
 
 LSTEAMCLIENT := $(SRCDIR)/lsteamclient
 LSTEAMCLIENT32 := ./syn-lsteamclient32/lsteamclient
@@ -277,11 +283,15 @@ VKD3D := $(SRCDIR)/vkd3d-proton
 VKD3D_OBJ32 := ./obj-vkd3d32
 VKD3D_OBJ64 := ./obj-vkd3d64
 
+CMAKE_BIN32 := cmake
+CMAKE_BIN64 := cmake
+ifneq ($(STEAMRT_PATH),) # Don't build cmake in native mode
 CMAKE := $(SRCDIR)/cmake
 CMAKE_OBJ32 := ../obj-cmake32
 CMAKE_OBJ64 := ../obj-cmake64
 CMAKE_BIN32 := $(CMAKE_OBJ32)/built/bin/cmake
 CMAKE_BIN64 := $(CMAKE_OBJ64)/built/bin/cmake
+endif # STEAMRT_PATH
 
 BISON_VER = 3.3.2
 BISON_TARBALL := bison-$(BISON_VER).tar.xz
@@ -1335,7 +1345,7 @@ FAUDIO_CONFIGURE_FILES32 := $(FAUDIO_OBJ32)/Makefile
 FAUDIO_CONFIGURE_FILES64 := $(FAUDIO_OBJ64)/Makefile
 
 $(FAUDIO_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL32)
-$(FAUDIO_CONFIGURE_FILES32): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(CMAKE_BIN32) | gst_base32 $(FAUDIO_OBJ32)
+$(FAUDIO_CONFIGURE_FILES32): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(FAUDIO_DEPS32) | $(FAUDIO_OBJ32)
 	cd $(dir $@) && \
 		PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig \
 		$(CMAKE_BIN32) $(abspath $(FAUDIO)) \
@@ -1347,7 +1357,7 @@ $(FAUDIO_CONFIGURE_FILES32): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(CMAKE_BI
 			-DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32"
 
 $(FAUDIO_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
-$(FAUDIO_CONFIGURE_FILES64): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(CMAKE_BIN64) | gst_base64 $(FAUDIO_OBJ64)
+$(FAUDIO_CONFIGURE_FILES64): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(FAUDIO_DEPS64) | $(FAUDIO_OBJ64)
 	cd $(dir $@) && \
 		PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR64))/lib/pkgconfig \
 		$(CMAKE_BIN64) $(abspath $(FAUDIO)) \
@@ -1734,6 +1744,8 @@ vrclient32: $(VRCLIENT_CONFIGURE_FILES32) | $(WINE_BUILDTOOLS32) $(filter $(MAKE
 
 ## Create & configure object directory for cmake
 
+ifneq ($(STEAMRT_PATH),) # Don't build cmake in native mode
+
 CMAKE_CONFIGURE_FILES32 := $(CMAKE_OBJ32)/Makefile
 CMAKE_CONFIGURE_FILES64 := $(CMAKE_OBJ64)/Makefile
 
@@ -1784,6 +1796,8 @@ cmake32-intermediate: $(CMAKE_CONFIGURE_FILES32) $(filter $(MAKECMDGOALS),cmake3
 	+$(MAKE) -C $(CMAKE_OBJ32)
 	+$(MAKE) -C $(CMAKE_OBJ32) install
 	touch $(CMAKE_BIN32)
+
+endif # ifneq ($(STEAMRT_PATH),)
 
 ##
 ## bison -- necessary for wine, steam runtime version too old
