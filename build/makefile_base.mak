@@ -497,6 +497,8 @@ module64:
 module: module32 module64
 
 GST_COMMON_MESON_ARGS := \
+	-Db_lto=true \
+	-Db_pie=true \
 	-Dexamples=disabled \
 	-Dtests=disabled \
 	-Dgtk_doc=disabled \
@@ -583,6 +585,9 @@ GSTREAMER_MESON_ARGS := \
 	-Dbenchmarks=disabled \
 	-Dtools=disabled \
 	-Dbash-completion=disabled \
+	-Dptp-helper-permissions=capabilities \
+	-Ddbghelp=disabled \
+	-Dpackage-name="GStreamer (Proton)" \
 	$(GST_COMMON_MESON_ARGS)
 
 GSTREAMER_CONFIGURE_FILES32 := $(GSTREAMER_OBJ32)/build.ninja
@@ -675,6 +680,7 @@ GST_BASE_MESON_ARGS := \
 	-Dxshm=disabled \
 	-Dxvideo=disabled \
 	-Dtools=disabled \
+	-Dpackage-name="GStreamer Base Plugins (Proton)" \
 	$(GST_COMMON_MESON_ARGS)
 
 GST_BASE_CONFIGURE_FILES32 := $(GST_BASE_OBJ32)/build.ninja
@@ -791,6 +797,7 @@ GST_GOOD_MESON_ARGS := \
 	-Dximagesrc=disabled \
 	-Dy4m=disabled \
 	-Dtools=disabled \
+	-Dpackage-name="GStreamer Good Plugins (Proton)" \
 	$(GST_COMMON_MESON_ARGS)
 
 GST_GOOD_CONFIGURE_FILES32 := $(GST_GOOD_OBJ32)/build.ninja
@@ -1240,9 +1247,9 @@ $(WINE_CONFIGURE_FILES64): $(MAKEFILE_DEP) | faudio64 jxrlib64 gst_base64 $(WINE
 		../$(WINE)/configure \
 			--with-x \
 			--with-gstreamer \
+			--with-faudio \
 			--without-curses \
 			--without-oss \
-			--disable-winemenubuilder \
 			--disable-win16 \
 			--enable-win64 \
 			--disable-tests \
@@ -1266,9 +1273,9 @@ $(WINE_CONFIGURE_FILES32): $(MAKEFILE_DEP) | faudio32 jxrlib32 gst_base32 $(WINE
 		../$(WINE)/configure \
 			--with-x \
 			--with-gstreamer \
+			--with-faudio \
 			--without-curses \
 			--without-oss \
-			--disable-winemenubuilder \
 			--disable-win16 \
 			--disable-tests \
 			--prefix=$(abspath $(WINE_DST32)) \
