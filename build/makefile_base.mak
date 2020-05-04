@@ -246,10 +246,14 @@ WINE_OBJ64 := ./obj-wine64
 WINEMAKER := $(abspath $(WINE)/tools/winemaker/winemaker)
 WINE_DEPS32 := faudio32 vkd3d32
 WINE_DEPS64 := faudio64 vkd3d64
-ifneq ($(STEAMRT_PATH),) # Don't build gstreamer/bison in native mode
-	WINE_DEPS32 += gst_base32 bison32
-	WINE_DEPS64 += gst_base64 bison64
+ifneq ($(STEAMRT_PATH),) # Don't build bison in native mode
+	WINE_DEPS32 += bison32
+	WINE_DEPS64 += bison64
 endif # STEAMRT_PATH
+ifneq ($(SYSTEM_GSTREAMER), 1) # Use system gstreamer
+	WINE_DEPS32 += gst_base32
+	WINE_DEPS64 += gst_base64
+endif # SYSTEM_GSTREAMER
 
 # Wine outputs that need to exist for other steps (dist)
 WINE_OUT_BIN := $(DST_DIR)/bin/wine64
@@ -439,9 +443,9 @@ DIST_WINEMONO_DIR := $(DST_DIR)/share/wine/mono
 DIST_WINEMONO := $(DIST_WINEMONO_DIR)/wine-mono-$(WINEMONO_VER)
 DIST_FONTS := $(DST_DIR)/share/fonts
 DIST_DEPS := wine vrclient lsteamclient steam
-ifneq ($(STEAMRT_PATH),) # Don't build gstreamer in native mode
+ifneq ($(SYSTEM_GSTREAMER),1) # Use system gstreamer
 	DIST_DEPS += gst_good
-endif # STEAMRT_PATH
+endif # SYSTEM_GSTREAMER
 ifneq ($(NO_DXVK),1) # May be disabled by configure
 	DIST_DEPS += dxvk
 endif # NO_DXVK
@@ -580,7 +584,7 @@ module64:
 
 module: module32 module64
 
-ifneq ($(STEAMRT_PATH),) # Don't build gstreamer in native mode
+ifneq ($(SYSTEM_GSTREAMER),1) # Use system gstreamer
 
 ##
 ## glib
@@ -590,6 +594,10 @@ GLIB_CONFIGURE_FILES32 := $(GLIB_OBJ32)/build.ninja
 GLIB_CONFIGURE_FILES64 := $(GLIB_OBJ64)/build.ninja
 
 GLIB_MESON_ARGS := -Dlibmount=false
+GLIB_MESON_ARGS += \
+	-Dselinux=false \
+	-Db_lto=true \
+	-Db_pie=true
 
 # 64-bit configure.  Remove coredata file if already configured (due to e.g. makefile changing)
 $(GLIB_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
@@ -598,6 +606,7 @@ $(GLIB_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(GLIB_OBJ64)
 		rm -f "$(abspath $(GLIB_OBJ64))"/meson-private/coredata.dat; \
 	fi
 	cd "$(abspath $(GLIB))" && \
+		CFLAGS+=" -DG_DISABLE_CAST_CHECKS" \
 		meson --prefix="$(abspath $(TOOLS_DIR64))" --libdir="lib" $(GLIB_MESON_ARGS) $(MESON_STRIP_ARG) --buildtype=release "$(abspath $(GLIB_OBJ64))"
 
 # 32-bit configure.  Remove coredata file if already configured (due to e.g. makefile changing)
@@ -607,6 +616,10 @@ $(GLIB_CONFIGURE_FILES32): $(MAKEFILE_DEP) | $(GLIB_OBJ32)
 		rm -f "$(abspath $(GLIB_OBJ32))"/meson-private/coredata.dat; \
 	fi
 	cd "$(abspath $(GLIB))" && \
+		CFLAGS="-m32 -mstackrealign $(COMMON_FLAGS)" \
+		CXXFLAGS="-m32 -mstackrealign $(COMMON_FLAGS)" \
+		PKG_CONFIG="i686-pc-linux-gnu-pkg-config" \
+		CFLAGS+=" -DG_DISABLE_CAST_CHECKS" \
 		meson --prefix="$(abspath $(TOOLS_DIR32))" --libdir="lib" $(GLIB_MESON_ARGS) $(MESON_STRIP_ARG) --buildtype=release "$(abspath $(GLIB_OBJ32))"
 
 ## glib goals
@@ -647,6 +660,8 @@ glib32: $(GLIB_CONFIGURE_FILES32)
 
 
 GST_COMMON_MESON_ARGS := \
+	-Db_lto=true \
+	-Db_pie=true \
 	-Dexamples=disabled \
 	-Dtests=disabled \
 	-Dgtk_doc=disabled \
@@ -688,6 +703,9 @@ $(GST_ORC_CONFIGURE_FILES32): $(MAKEFILE_DEP) glib32 | $(GST_ORC_OBJ32)
 	fi
 	cd "$(abspath $(GST_ORC))" && \
 	PATH="$(abspath $(TOOLS_DIR32))/bin:$(PATH)" \
+		CFLAGS="-m32 $(COMMON_FLAGS)" \
+		CXXFLAGS="-m32 $(COMMON_FLAGS)" \
+		PKG_CONFIG="i686-pc-linux-gnu-pkg-config" \
 		PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig \
 		meson --prefix="$(abspath $(TOOLS_DIR32))" --libdir="lib" $(GST_ORC_MESON_ARGS) $(MESON_STRIP_ARG) "$(abspath $(GST_ORC_OBJ32))"
 
@@ -729,6 +747,10 @@ GSTREAMER_MESON_ARGS := \
 	-Dgst_parse=false \
 	-Dbenchmarks=disabled \
 	-Dtools=disabled \
+  -Dbash-completion=disabled \
+	-Dptp-helper-permissions=capabilities \
+	-Ddbghelp=disabled \
+	-Dpackage-name="GStreamer (Proton)" \
 	$(GST_COMMON_MESON_ARGS)
 
 GSTREAMER_CONFIGURE_FILES32 := $(GSTREAMER_OBJ32)/build.ninja
@@ -753,6 +775,9 @@ $(GSTREAMER_CONFIGURE_FILES32): $(MAKEFILE_DEP) gst_orc32 | $(GSTREAMER_OBJ32)
 	fi
 	cd "$(abspath $(GSTREAMER))" && \
 	PATH="$(abspath $(TOOLS_DIR32))/bin:$(PATH)" \
+		CFLAGS="-m32 $(COMMON_FLAGS)" \
+		CXXFLAGS="-m32 $(COMMON_FLAGS)" \
+		PKG_CONFIG="i686-pc-linux-gnu-pkg-config" \
 		PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig \
 		meson --prefix="$(abspath $(TOOLS_DIR32))" --libdir="lib" $(GSTREAMER_MESON_ARGS) $(MESON_STRIP_ARG) --buildtype=release "$(abspath $(GSTREAMER_OBJ32))"
 
@@ -818,6 +843,7 @@ GST_BASE_MESON_ARGS := \
 	-Dxshm=disabled \
 	-Dxvideo=disabled \
 	-Dtools=disabled \
+	-Dpackage-name="GStreamer Base Plugins (Proton)" \
 	$(GST_COMMON_MESON_ARGS)
 
 GST_BASE_CONFIGURE_FILES32 := $(GST_BASE_OBJ32)/build.ninja
@@ -842,6 +868,9 @@ $(GST_BASE_CONFIGURE_FILES32): $(MAKEFILE_DEP) gstreamer32 | $(GST_BASE_OBJ32)
 	fi
 	cd "$(abspath $(GST_BASE))" && \
 	PATH="$(abspath $(TOOLS_DIR32))/bin:$(PATH)" \
+		CFLAGS="-m32 $(COMMON_FLAGS)" \
+		CXXFLAGS="-m32 $(COMMON_FLAGS)" \
+		PKG_CONFIG="i686-pc-linux-gnu-pkg-config" \
 		PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig \
 		meson --prefix="$(abspath $(TOOLS_DIR32))" --libdir="lib" $(GST_BASE_MESON_ARGS) $(MESON_STRIP_ARG) --buildtype=release "$(abspath $(GST_BASE_OBJ32))"
 
@@ -932,6 +961,7 @@ GST_GOOD_MESON_ARGS := \
 	-Dximagesrc=disabled \
 	-Dy4m=disabled \
 	-Dtools=disabled \
+	-Dpackage-name="GStreamer Good Plugins (Proton)" \
 	$(GST_COMMON_MESON_ARGS)
 
 GST_GOOD_CONFIGURE_FILES32 := $(GST_GOOD_OBJ32)/build.ninja
@@ -956,6 +986,9 @@ $(GST_GOOD_CONFIGURE_FILES32): $(MAKEFILE_DEP) gst_base32 | $(GST_GOOD_OBJ32)
 	fi
 	cd "$(abspath $(GST_GOOD))" && \
 	PATH="$(abspath $(TOOLS_DIR32))/bin:$(PATH)" \
+		CFLAGS="-m32 $(COMMON_FLAGS)" \
+		CXXFLAGS="-m32 $(COMMON_FLAGS)" \
+		PKG_CONFIG="i686-pc-linux-gnu-pkg-config" \
 		PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig \
 		meson --prefix="$(abspath $(TOOLS_DIR32))" --libdir="lib" $(GST_GOOD_MESON_ARGS) $(MESON_STRIP_ARG) --buildtype=release "$(abspath $(GST_GOOD_OBJ32))"
 
@@ -991,7 +1024,7 @@ gst_good32: $(GST_GOOD_CONFIGURE_FILES32)
 	cp -a $(TOOLS_DIR32)/lib/libgst* $(DST_DIR)/lib/ && \
 	cp -a $(TOOLS_DIR32)/lib/gstreamer-1.0 $(DST_DIR)/lib/
 
-endif # ifneq ($(STEAMRT_PATH),)
+endif # ifneq ($(SYSTEM_GSTREAMER),)
 
 ##
 ## ffmpeg
@@ -1342,10 +1375,10 @@ $(WINE_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINE_DEPS64) $(WINE_OBJ64)
 		../$(WINE)/configure \
 			--with-x \
 			--with-gstreamer \
+			--with-faudio \
 			--without-mingw \
 			--without-curses \
 			--without-oss \
-			--disable-winemenubuilder \
 			--disable-win16 \
 			--enable-win64 \
 			--disable-tests \
@@ -1366,10 +1399,10 @@ $(WINE_CONFIGURE_FILES32): $(MAKEFILE_DEP) | $(WINE_DEPS32) $(WINE_OBJ32)
 		../$(WINE)/configure \
 			--with-x \
 			--with-gstreamer \
+			--with-faudio \
 			--without-mingw \
 			--without-curses \
 			--without-oss \
-			--disable-winemenubuilder \
 			--disable-win16 \
 			--disable-tests \
 			--prefix=$(abspath $(WINE_DST32)) \
@@ -1796,18 +1829,16 @@ $(WINEWIDL_CONFIGURE_FILES32): $(MAKEFILE_DEP) | $(WINEWIDL_OBJ32) $(WINEWIDL_DE
 	cd $(dir $@) && \
 		../$(WINE)/configure \
 			--with-x \
-			--with-gstreamer \
 			--without-mingw \
 			--without-curses \
 			--without-oss \
-			--disable-winemenubuilder \
 			--disable-win16 \
 			--disable-tests \
 			STRIP=$(STRIP_QUOTED) \
 			$(WINE_BISON32) \
 			CFLAGS=-I$(abspath $(TOOLS_DIR32))"/include -g $(COMMON_FLAGS)" \
-			LDFLAGS="-L$(abspath $(TOOLS_DIR32))/lib -Wl,-rpath-link,$(abspath $(TOOLS_DIR32))/lib" \
-			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig:/usr/lib32/pkgconfig \
+			LDFLAGS=-L$(abspath $(TOOLS_DIR32))/lib \
+			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig \
 			CC=$(CC_QUOTED) \
 			CXX=$(CXX_QUOTED)
 
@@ -1821,19 +1852,17 @@ $(WINEWIDL_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINEWIDL_OBJ64) $(WINEWIDL_DE
 	cd $(dir $@) && \
 		../$(WINE)/configure \
 			--with-x \
-			--with-gstreamer \
 			--without-mingw \
 			--without-curses \
 			--without-oss \
-			--disable-winemenubuilder \
 			--disable-win16 \
 			--enable-win64 \
 			--disable-tests \
 			STRIP=$(STRIP_QUOTED) \
 			$(WINE_BISON64) \
 			CFLAGS=-I$(abspath $(TOOLS_DIR64))"/include -g $(COMMON_FLAGS)" \
-			LDFLAGS="-L$(abspath $(TOOLS_DIR64))/lib -Wl,-rpath-link,$(abspath $(TOOLS_DIR64))/lib" \
-			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR64))/lib/pkgconfig:/usr/lib/pkgconfig \
+			LDFLAGS=-L$(abspath $(TOOLS_DIR64))/lib \
+			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR64))/lib/pkgconfig \
 			CC=$(CC_QUOTED) \
 			CXX=$(CXX_QUOTED)
 
