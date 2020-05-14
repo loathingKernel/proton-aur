@@ -250,6 +250,12 @@ WINE_DST32 := ./dist-wine32
 WINE_OBJ32 := ./obj-wine32
 WINE_OBJ64 := ./obj-wine64
 WINEMAKER := $(abspath $(WINE)/tools/winemaker/winemaker)
+WINE_DEPS32 := faudio32
+WINE_DEPS64 := faudio64
+ifneq ($(STEAMRT_PATH),) # Don't build gstreamer/bison in native mode
+	WINE_DEPS32 += bison32
+	WINE_DEPS64 += bison64
+endif # STEAMRT_PATH
 
 # Wine outputs that need to exist for other steps (dist)
 WINE_OUT_BIN := $(DST_DIR)/bin/wine64
@@ -269,6 +275,12 @@ WINEWIDL_OBJ32 := ./obj-widl32
 WINEWIDL_OBJ64 := ./obj-widl64
 WINEWIDL32 := $(WINEWIDL_OBJ32)/tools/widl/widl
 WINEWIDL64 := $(WINEWIDL_OBJ64)/tools/widl/widl
+WINEWIDL_DEPS32 :=
+WINEWIDL_DEPS64 :=
+ifneq ($(STEAMRT_PATH),) # Don't build bison in native mode
+	WINEWIDL_DEPS32 += bison32
+	WINEWIDL_DEPS64 += bison64
+endif # STEAMRT_PATH
 
 VRCLIENT := $(SRCDIR)/vrclient_x64
 VRCLIENT32 := ./syn-vrclient32
@@ -300,6 +312,10 @@ BISON_OBJ32 := ./obj-bison32
 BISON_OBJ64 := ./obj-bison64
 BISON_BIN32 := $(BISON_OBJ32)/built/bin/bison
 BISON_BIN64 := $(BISON_OBJ64)/built/bin/bison
+ifneq ($(STEAMRT_PATH),) # Don't build bison in native mode
+	WINE_BISON32 = BISON=$(abspath $(BISON_BIN32))
+	WINE_BISON64 = BISON=$(abspath $(BISON_BIN64))
+endif # STEAMRT_PATH
 
 LIBFFI_VER = 3.3
 LIBFFI_TARBALL := libffi-$(LIBFFI_VER).tar.gz
@@ -1559,7 +1575,7 @@ WINE32_MAKE_ARGS := \
 
 # 64bit-configure
 $(WINE_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
-$(WINE_CONFIGURE_FILES64): $(MAKEFILE_DEP) | faudio64 gst_base64 $(WINE_OBJ64) bison64
+$(WINE_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINE_DEPS64) gst_base64 $(WINE_OBJ64)
 	cd $(dir $@) && \
 		../$(WINE)/configure \
 			--without-curses \
@@ -1567,7 +1583,7 @@ $(WINE_CONFIGURE_FILES64): $(MAKEFILE_DEP) | faudio64 gst_base64 $(WINE_OBJ64) b
 			--disable-tests \
 			--prefix=$(abspath $(DST_DIR)) \
 			STRIP=$(STRIP_QUOTED) \
-			BISON=$(abspath $(BISON_BIN64)) \
+			$(WINE_BISON64) \
 			CFLAGS="-I$(abspath $(TOOLS_DIR64))/include -g $(COMMON_FLAGS)" \
 			CXXFLAGS="-I$(abspath $(TOOLS_DIR64))/include -g $(COMMON_FLAGS) -std=c++17" \
 			LDFLAGS="-L$(abspath $(TOOLS_DIR64))/lib -Wl,-rpath-link,$(abspath $(TOOLS_DIR64))/lib:/home/vagrant/.local/x86_64-w64-mingw32/lib" \
@@ -1577,14 +1593,14 @@ $(WINE_CONFIGURE_FILES64): $(MAKEFILE_DEP) | faudio64 gst_base64 $(WINE_OBJ64) b
 
 # 32-bit configure
 $(WINE_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL32)
-$(WINE_CONFIGURE_FILES32): $(MAKEFILE_DEP) | faudio32 gst_base32 $(WINE_OBJ32) bison32
+$(WINE_CONFIGURE_FILES32): $(MAKEFILE_DEP) | $(WINE_DEPS32) gst_base32 $(WINE_OBJ32)
 	cd $(dir $@) && \
 		../$(WINE)/configure \
 			--without-curses \
 			--disable-tests \
 			--prefix=$(abspath $(WINE_DST32)) \
 			STRIP=$(STRIP_QUOTED) \
-			BISON=$(abspath $(BISON_BIN32)) \
+			$(WINE_BISON32) \
 			CFLAGS="-I$(abspath $(TOOLS_DIR32))/include -g $(COMMON_FLAGS)" \
 			CXXFLAGS="-I$(abspath $(TOOLS_DIR32))/include -g $(COMMON_FLAGS) -std=c++17" \
 			LDFLAGS="-L$(abspath $(TOOLS_DIR32))/lib -Wl,-rpath-link,$(abspath $(TOOLS_DIR32))/lib:/home/vagrant/./local/i686-w64-mingw32/lib" \
@@ -1805,6 +1821,8 @@ endif # ifneq ($(STEAMRT_PATH),)
 
 # TODO Don't bother with this in native mode
 
+ifneq ($(STEAMRT_PATH),) # Don't build bison in native mode
+
 $(BISON):
 	if [ -e "$(SRCDIR)/../bison/$(BISON_TARBALL)" ]; then \
 		mkdir -p $(dir $@); \
@@ -1869,6 +1887,8 @@ bison32-intermediate: $(BISON_CONFIGURE_FILES32) $(filter $(MAKECMDGOALS),bison3
 	+$(MAKE) -C $(BISON_OBJ32) install
 	touch $(BISON_BIN32)
 	
+endif # ifneq ($(STEAMRT_PATH),)
+
 ##
 ## libffi
 ##
@@ -2018,14 +2038,14 @@ WINEWIDL_CONFIGURE_FILES64 := $(WINEWIDL_OBJ64)/Makefile
 WINEWIDL_CONFIGURE_FILES32 := $(WINEWIDL_OBJ32)/Makefile
 
 $(WINEWIDL_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL32)
-$(WINEWIDL_CONFIGURE_FILES32): $(MAKEFILE_DEP) | $(WINEWIDL_OBJ32) bison32
+$(WINEWIDL_CONFIGURE_FILES32): $(MAKEFILE_DEP) | $(WINEWIDL_OBJ32) $(WINEWIDL_DEPS32)
 	cd $(dir $@) && \
 		../$(WINE)/configure \
 			--without-curses \
 			--disable-tests \
 			STRIP=$(STRIP_QUOTED) \
-			BISON=$(abspath $(BISON_BIN32)) \
-			CFLAGS=-I$(abspath $(TOOLS_DIR64))"/include -g $(COMMON_FLAGS)" \
+			$(WINE_BISON32) \
+			CFLAGS=-I$(abspath $(TOOLS_DIR32))"/include -g $(COMMON_FLAGS)" \
 			LDFLAGS=-L$(abspath $(TOOLS_DIR32))/lib \
 			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig \
 			CC=$(CC_QUOTED) \
@@ -2037,14 +2057,14 @@ $(WINEWIDL32): $(WINEWIDL_CONFIGURE_FILES32)
 	make tools/widl
 
 $(WINEWIDL_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
-$(WINEWIDL_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINEWIDL_OBJ64) bison64
+$(WINEWIDL_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINEWIDL_OBJ64) $(WINEWIDL_DEPS64)
 	cd $(dir $@) && \
 		../$(WINE)/configure \
 			--without-curses \
 			--enable-win64 \
 			--disable-tests \
 			STRIP=$(STRIP_QUOTED) \
-			BISON=$(abspath $(BISON_BIN64)) \
+			$(WINE_BISON64) \
 			CFLAGS=-I$(abspath $(TOOLS_DIR64))"/include -g $(COMMON_FLAGS)" \
 			LDFLAGS=-L$(abspath $(TOOLS_DIR64))/lib \
 			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR64))/lib/pkgconfig \
