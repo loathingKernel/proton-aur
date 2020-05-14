@@ -1169,6 +1169,8 @@ gst_libav32: $(GST_LIBAV_CONFIGURE_FILES32)
 ## ffmpeg
 ##
 
+ifeq ($(WITH_FFMPEG),1)
+
 FFMPEG_CONFIGURE_FILES32 := $(FFMPEG_OBJ32)/Makefile
 FFMPEG_CONFIGURE_FILES64 := $(FFMPEG_OBJ64)/Makefile
 
@@ -1300,6 +1302,8 @@ ffmpeg32: $(FFMPEG_CONFIGURE_FILES32)
 	+$(MAKE) -C $(FFMPEG_OBJ32) install
 	mkdir -pv $(DST_DIR)/lib
 	cp -a $(TOOLS_DIR32)/lib/{libavcodec,libavfilter,libavformat,libavutil,libswresample}* $(DST_DIR)/lib
+
+endif # ifeq ($(WITH_FFMPEG),1)
 
 ##
 ## FAudio
