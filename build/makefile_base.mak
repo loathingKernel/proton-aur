@@ -439,6 +439,10 @@ DIST_GECKO64 := $(DIST_GECKO_DIR)/wine-gecko-$(GECKO_VER)-x86_64
 DIST_WINEMONO_DIR := $(DST_DIR)/share/wine/mono
 DIST_WINEMONO := $(DIST_WINEMONO_DIR)/wine-mono-$(WINEMONO_VER)
 DIST_FONTS := $(DST_DIR)/share/fonts
+DIST_DEPS := wine gst_good gst_bad gst_ugly gst_libav vrclient lsteamclient steam vkd3d-proton
+ifneq ($(NO_DXVK),1) # May be disabled by configure
+	DIST_DEPS += dxvk
+endif # NO_DXVK
 
 DIST_TARGETS := $(DIST_COPY_TARGETS) $(DIST_OVR32) $(DIST_OVR64) \
                 $(DIST_COMPAT_MANIFEST) $(DIST_LICENSE) $(DIST_OFL_LICENSE) $(DIST_FONTS)
@@ -527,7 +531,7 @@ $(DIST_FONTS): fonts
 ALL_TARGETS += dist
 GOAL_TARGETS += dist
 
-dist: $(DIST_TARGETS) wine gst_good gst_bad gst_ugly gst_libav vrclient lsteamclient steam dxvk vkd3d-proton | $(DST_DIR)
+dist: $(DIST_TARGETS) $(DIST_DEPS) | $(DST_DIR)
 	echo `date '+%s'` `GIT_DIR=$(abspath $(SRCDIR)/.git) git describe --tags` > $(DIST_VERSION)
 	cp $(DIST_VERSION) $(DST_BASE)/
 	rm -rf $(abspath $(DIST_PREFIX)) && \
