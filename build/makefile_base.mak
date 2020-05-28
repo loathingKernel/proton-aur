@@ -1594,8 +1594,13 @@ $(WINE_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
 $(WINE_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINE_DEPS64) $(WINE_OBJ64)
 	cd $(dir $@) && \
 		../$(WINE)/configure \
+			--with-x \
 			--with-gstreamer \
+			--with-mingw \
 			--without-curses \
+			--without-oss \
+			--disable-winemenubuilder \
+			--disable-win16 \
 			--enable-win64 \
 			--disable-tests \
 			--prefix=$(abspath $(DST_DIR)) \
@@ -1603,7 +1608,7 @@ $(WINE_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINE_DEPS64) $(WINE_OBJ64)
 			$(WINE_BISON64) \
 			CFLAGS="-I$(abspath $(TOOLS_DIR64))/include -g $(COMMON_FLAGS)" \
 			CXXFLAGS="-I$(abspath $(TOOLS_DIR64))/include -g $(COMMON_FLAGS) -std=c++17" \
-			LDFLAGS="-L$(abspath $(TOOLS_DIR64))/lib -Wl,-rpath-link,$(abspath $(TOOLS_DIR64))/lib:/home/vagrant/.local/x86_64-w64-mingw32/lib" \
+			LDFLAGS="-L$(abspath $(TOOLS_DIR64))/lib -Wl,-rpath-link,$(abspath $(TOOLS_DIR64))/lib" \
 			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR64))/lib/pkgconfig:/usr/lib/pkgconfig \
 			CC=$(CC_QUOTED) \
 			CXX=$(CXX_QUOTED)
@@ -1613,15 +1618,20 @@ $(WINE_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL32)
 $(WINE_CONFIGURE_FILES32): $(MAKEFILE_DEP) | $(WINE_DEPS32) $(WINE_OBJ32)
 	cd $(dir $@) && \
 		../$(WINE)/configure \
+			--with-x \
 			--with-gstreamer \
+			--with-mingw \
 			--without-curses \
+			--without-oss \
+			--disable-winemenubuilder \
+			--disable-win16 \
 			--disable-tests \
 			--prefix=$(abspath $(WINE_DST32)) \
 			STRIP=$(STRIP_QUOTED) \
 			$(WINE_BISON32) \
 			CFLAGS="-I$(abspath $(TOOLS_DIR32))/include -g $(COMMON_FLAGS)" \
 			CXXFLAGS="-I$(abspath $(TOOLS_DIR32))/include -g $(COMMON_FLAGS) -std=c++17" \
-			LDFLAGS="-L$(abspath $(TOOLS_DIR32))/lib -Wl,-rpath-link,$(abspath $(TOOLS_DIR32))/lib:/home/vagrant/./local/i686-w64-mingw32/lib" \
+			LDFLAGS="-L$(abspath $(TOOLS_DIR32))/lib -Wl,-rpath-link,$(abspath $(TOOLS_DIR32))/lib" \
 			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig:/usr/lib32/pkgconfig \
 			CC=$(CC_QUOTED) \
 			CXX=$(CXX_QUOTED)
@@ -2059,8 +2069,13 @@ $(WINEWIDL_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL32)
 $(WINEWIDL_CONFIGURE_FILES32): $(MAKEFILE_DEP) | $(WINEWIDL_OBJ32) $(WINEWIDL_DEPS32)
 	cd $(dir $@) && \
 		../$(WINE)/configure \
+			--with-x \
 			--with-gstreamer \
+			--with-mingw \
 			--without-curses \
+			--without-oss \
+			--disable-winemenubuilder \
+			--disable-win16 \
 			--disable-tests \
 			STRIP=$(STRIP_QUOTED) \
 			$(WINE_BISON32) \
@@ -2079,8 +2094,13 @@ $(WINEWIDL_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
 $(WINEWIDL_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINEWIDL_OBJ64) $(WINEWIDL_DEPS64)
 	cd $(dir $@) && \
 		../$(WINE)/configure \
+			--with-x \
 			--with-gstreamer \
+			--with-mingw \
 			--without-curses \
+			--without-oss \
+			--disable-winemenubuilder \
+			--disable-win16 \
 			--enable-win64 \
 			--disable-tests \
 			STRIP=$(STRIP_QUOTED) \
