@@ -1228,6 +1228,8 @@ $(FFMPEG_CONFIGURE_FILES64): $(FFMPEG)/configure $(MAKEFILE_DEP) | $(FFMPEG_OBJ6
 		$(abspath $(FFMPEG))/configure \
 			--cc=$(CC_QUOTED) --cxx=$(CXX_QUOTED) \
 			--prefix=$(abspath $(TOOLS_DIR64)) \
+			--extra-cflags="$(COMMON_FLAGS)" \
+			--extra-ldflags="$(LDFLAGS)" \
 			--disable-static \
 			--enable-shared \
 			--disable-programs \
@@ -1274,10 +1276,12 @@ $(FFMPEG_CONFIGURE_FILES64): $(FFMPEG)/configure $(MAKEFILE_DEP) | $(FFMPEG_OBJ6
 $(FFMPEG_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL32)
 $(FFMPEG_CONFIGURE_FILES32): $(FFMPEG)/configure $(MAKEFILE_DEP) | $(FFMPEG_OBJ32)
 	cd $(dir $@) && \
+		export PKG_CONFIG_PATH="/usr/lib32/pkgconfig" && \
 		$(abspath $(FFMPEG))/configure \
 			--cc=$(CC_QUOTED) --cxx=$(CXX_QUOTED) \
 			--prefix=$(abspath $(TOOLS_DIR32)) \
-			--extra-cflags=$(FFMPEG_CROSS_CFLAGS) --extra-ldflags=$(FFMPEG_CROSS_LDFLAGS) \
+			--extra-cflags="$(COMMON_FLAGS) -m32" \
+			--extra-ldflags="$(LDFLAGS) -m32" \
 			--disable-static \
 			--enable-shared \
 			--disable-programs \
@@ -1380,7 +1384,7 @@ $(FAUDIO_CONFIGURE_FILES32): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(FAUDIO_D
 			-DCMAKE_MODULE_LINKER_FLAGS_INIT="-L$(abspath $(TOOLS_DIR32))/lib:$(abspath $(TOOLS_DIR32))/lib/gstreamer-1.0 -Wl,-rpath-link,$(abspath $(TOOLS_DIR32))/lib:$(abspath $(TOOLS_DIR32))/lib/gstreamer-1.0" \
 			-DCMAKE_INSTALL_PREFIX="$(abspath $(TOOLS_DIR32))" \
 			$(FAUDIO_CMAKE_FLAGS) \
-			-DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32"
+			-DCMAKE_C_FLAGS="$(COMMON_FLAGS) -m32" -DCMAKE_CXX_FLAGS="$(COMMON_FLAGS) -m32"
 
 $(FAUDIO_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
 $(FAUDIO_CONFIGURE_FILES64): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(FAUDIO_DEPS64) | $(FAUDIO_OBJ64)
@@ -1391,7 +1395,8 @@ $(FAUDIO_CONFIGURE_FILES64): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) $(FAUDIO_D
 			-DCMAKE_SHARED_LINKER_FLAGS_INIT="-L$(abspath $(TOOLS_DIR64))/lib:$(abspath $(TOOLS_DIR64))/lib/gstreamer-1.0 -Wl,-rpath-link,$(abspath $(TOOLS_DIR64))/lib:$(abspath $(TOOLS_DIR64))/lib/gstreamer-1.0" \
 			-DCMAKE_MODULE_LINKER_FLAGS_INIT="-L$(abspath $(TOOLS_DIR64))/lib:$(abspath $(TOOLS_DIR64))/lib/gstreamer-1.0 -Wl,-rpath-link,$(abspath $(TOOLS_DIR64))/lib:$(abspath $(TOOLS_DIR64))/lib/gstreamer-1.0" \
 			-DCMAKE_INSTALL_PREFIX="$(abspath $(TOOLS_DIR64))" \
-			$(FAUDIO_CMAKE_FLAGS)
+			$(FAUDIO_CMAKE_FLAGS) \
+			-DCMAKE_C_FLAGS="$(COMMON_FLAGS)" -DCMAKE_CXX_FLAGS="$(COMMON_FLAGS)"
 
 faudio32: SHELL = $(CONTAINER_SHELL32)
 faudio32: $(FAUDIO_CONFIGURE_FILES32)
