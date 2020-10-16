@@ -1487,7 +1487,6 @@ $(VRCLIENT_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
 $(VRCLIENT_CONFIGURE_FILES64): $(MAKEFILE_DEP) $(VRCLIENT) $(VRCLIENT)/vrclient_x64 | $(VRCLIENT_OBJ64) $(WINEMAKER)
 	cd $(VRCLIENT) && \
 		$(WINEMAKER) --nosource-fix --nolower-include --nodlls --nomsvcrt \
-			--nosource-fix --nolower-include --nodlls --nomsvcrt \
 			-I"$(abspath $(TOOLS_DIR64))"/include/ \
 			-I"$(abspath $(TOOLS_DIR64))"/include/wine/ \
 			-I"$(abspath $(TOOLS_DIR64))"/include/wine/windows/ \
@@ -1764,7 +1763,7 @@ dxvk32: $(DXVK_CONFIGURE_FILES32)
 	cp "$(DXVK_OBJ32)"/bin/d3d10_1.dll "$(DST_DIR)"/lib/wine/dxvk/
 	cp "$(DXVK_OBJ32)"/bin/d3d10core.dll "$(DST_DIR)"/lib/wine/dxvk/
 	cp "$(DXVK_OBJ32)"/bin/d3d9.dll "$(DST_DIR)"/lib/wine/dxvk/
-	cp "$(DXVK_OBJ32)"/bin/dxvk_config.dll "$(DST_DIR)"/lib/wine/dxvk
+	cp "$(DXVK_OBJ32)"/bin/dxvk_config.dll "$(DST_DIR)"/lib/wine/dxvk/
 	if test -e $(SRCDIR)/.git; then ( cd $(SRCDIR) && git submodule status -- dxvk ) > "$(DST_DIR)"/lib/wine/dxvk/version; fi
 
 endif # NO_DXVK
