@@ -720,14 +720,14 @@ gst_orc64: SHELL = $(CONTAINER_SHELL64)
 gst_orc64: $(GST_ORC_CONFIGURE_FILES64)
 	PATH="$(abspath $(TOOLS_DIR64))/bin:$(PATH)" \
 	LD_LIBRARY_PATH="$(abspath $(TOOLS_DIR64))/lib:$(LD_LIBRARY_PATH)" \
-	ninja -C "$(GST_ORC_OBJ64)" install
+	ninja -v -C "$(GST_ORC_OBJ64)" install
 	cp -a $(TOOLS_DIR64)/lib/liborc* $(DST_DIR)/lib64/
 
 gst_orc32: SHELL = $(CONTAINER_SHELL32)
 gst_orc32: $(GST_ORC_CONFIGURE_FILES32)
 	PATH="$(abspath $(TOOLS_DIR32))/bin:$(PATH)" \
 	LD_LIBRARY_PATH="$(abspath $(TOOLS_DIR32))/lib:$(LD_LIBRARY_PATH)" \
-	ninja -C "$(GST_ORC_OBJ32)" install
+	ninja -v -C "$(GST_ORC_OBJ32)" install
 	cp -a $(TOOLS_DIR32)/lib/liborc* $(DST_DIR)/lib/
 
 ##
@@ -792,7 +792,7 @@ gstreamer64: SHELL = $(CONTAINER_SHELL64)
 gstreamer64: $(GSTREAMER_CONFIGURE_FILES64)
 	PATH="$(abspath $(TOOLS_DIR64))/bin:$(PATH)" \
 	LD_LIBRARY_PATH="$(abspath $(TOOLS_DIR64))/lib:$(LD_LIBRARY_PATH)" \
-	ninja -C "$(GSTREAMER_OBJ64)" install
+	ninja -v -C "$(GSTREAMER_OBJ64)" install
 	cp -a $(TOOLS_DIR64)/lib/libgst* $(DST_DIR)/lib64/ && \
 	cp -a $(TOOLS_DIR64)/lib/gstreamer-1.0 $(DST_DIR)/lib64/
 
@@ -800,7 +800,7 @@ gstreamer32: SHELL = $(CONTAINER_SHELL32)
 gstreamer32: $(GSTREAMER_CONFIGURE_FILES32)
 	PATH="$(abspath $(TOOLS_DIR32))/bin:$(PATH)" \
 	LD_LIBRARY_PATH="$(abspath $(TOOLS_DIR32))/lib:$(LD_LIBRARY_PATH)" \
-	ninja -C "$(GSTREAMER_OBJ32)" install
+	ninja -v -C "$(GSTREAMER_OBJ32)" install
 	cp -a $(TOOLS_DIR32)/lib/libgst* $(DST_DIR)/lib/ && \
 	cp -a $(TOOLS_DIR32)/lib/gstreamer-1.0 $(DST_DIR)/lib/
 
@@ -833,6 +833,7 @@ GST_BASE_MESON_ARGS := \
 	-Dx11=disabled \
 	-Dxshm=disabled \
 	-Dxvideo=disabled \
+	-Dtools=disabled \
 	-Dpackage-name="GStreamer Base Plugins (Proton)" \
 	$(GST_COMMON_MESON_ARGS)
 
@@ -884,7 +885,7 @@ gst_base64: SHELL = $(CONTAINER_SHELL64)
 gst_base64: $(GST_BASE_CONFIGURE_FILES64)
 	PATH="$(abspath $(TOOLS_DIR64))/bin:$(PATH)" \
 	LD_LIBRARY_PATH="$(abspath $(TOOLS_DIR64))/lib:$(LD_LIBRARY_PATH)" \
-	ninja -C "$(GST_BASE_OBJ64)" install
+	ninja -v -C "$(GST_BASE_OBJ64)" install
 	cp -a $(TOOLS_DIR64)/lib/libgst* $(DST_DIR)/lib64/ && \
 	cp -a $(TOOLS_DIR64)/lib/gstreamer-1.0 $(DST_DIR)/lib64/
 
@@ -892,7 +893,7 @@ gst_base32: SHELL = $(CONTAINER_SHELL32)
 gst_base32: $(GST_BASE_CONFIGURE_FILES32)
 	PATH="$(abspath $(TOOLS_DIR32))/bin:$(PATH)" \
 	LD_LIBRARY_PATH="$(abspath $(TOOLS_DIR32))/lib:$(LD_LIBRARY_PATH)" \
-	ninja -C "$(GST_BASE_OBJ32)" install
+	ninja -v -C "$(GST_BASE_OBJ32)" install
 	cp -a $(TOOLS_DIR32)/lib/libgst* $(DST_DIR)/lib/ && \
 	cp -a $(TOOLS_DIR32)/lib/gstreamer-1.0 $(DST_DIR)/lib/
 
@@ -944,11 +945,13 @@ GST_GOOD_MESON_ARGS := \
 	-Dtaglib=disabled \
 	-Dudp=disabled \
 	-Dv4l2=disabled \
+	-Dvideobox=disabled \
 	-Dvideocrop=disabled \
 	-Dvideomixer=disabled \
 	-Dwavenc=disabled \
 	-Dximagesrc=disabled \
 	-Dy4m=disabled \
+	-Dtools=disabled \
 	-Dpackage-name="GStreamer Good Plugins (Proton)" \
 	$(GST_COMMON_MESON_ARGS)
 
@@ -1000,7 +1003,7 @@ gst_good64: SHELL = $(CONTAINER_SHELL64)
 gst_good64: $(GST_GOOD_CONFIGURE_FILES64)
 	PATH="$(abspath $(TOOLS_DIR64))/bin:$(PATH)" \
 	LD_LIBRARY_PATH="$(abspath $(TOOLS_DIR64))/lib:$(LD_LIBRARY_PATH)" \
-	ninja -C "$(GST_GOOD_OBJ64)" install
+	ninja -v -C "$(GST_GOOD_OBJ64)" install
 	cp -a $(TOOLS_DIR64)/lib/libgst* $(DST_DIR)/lib64/ && \
 	cp -a $(TOOLS_DIR64)/lib/gstreamer-1.0 $(DST_DIR)/lib64/
 
@@ -1008,7 +1011,7 @@ gst_good32: SHELL = $(CONTAINER_SHELL32)
 gst_good32: $(GST_GOOD_CONFIGURE_FILES32)
 	PATH="$(abspath $(TOOLS_DIR32))/bin:$(PATH)" \
 	LD_LIBRARY_PATH="$(abspath $(TOOLS_DIR32))/lib:$(LD_LIBRARY_PATH)" \
-	ninja -C "$(GST_GOOD_OBJ32)" install
+	ninja -v -C "$(GST_GOOD_OBJ32)" install
 	cp -a $(TOOLS_DIR32)/lib/libgst* $(DST_DIR)/lib/ && \
 	cp -a $(TOOLS_DIR32)/lib/gstreamer-1.0 $(DST_DIR)/lib/
 
@@ -1640,6 +1643,7 @@ $(WINE_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINE_DEPS64) $(WINE_OBJ64)
 			$(WINE_BISON64) \
 			CFLAGS="-I$(abspath $(TOOLS_DIR64))/include -g $(COMMON_FLAGS)" \
 			CXXFLAGS="-I$(abspath $(TOOLS_DIR64))/include -g $(COMMON_FLAGS) -std=c++17" \
+			CROSSCFLAGS="-g $(COMMON_FLAGS)" \
 			LDFLAGS="-L$(abspath $(TOOLS_DIR64))/lib -Wl,-rpath-link,$(abspath $(TOOLS_DIR64))/lib" \
 			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR64))/lib/pkgconfig:/usr/lib/pkgconfig \
 			CC=$(CC_QUOTED) \
@@ -1663,6 +1667,7 @@ $(WINE_CONFIGURE_FILES32): $(MAKEFILE_DEP) | $(WINE_DEPS32) $(WINE_OBJ32)
 			$(WINE_BISON32) \
 			CFLAGS="-I$(abspath $(TOOLS_DIR32))/include -g $(COMMON_FLAGS)" \
 			CXXFLAGS="-I$(abspath $(TOOLS_DIR32))/include -g $(COMMON_FLAGS) -std=c++17" \
+			CROSSCFLAGS="-g $(COMMON_FLAGS)" \
 			LDFLAGS="-L$(abspath $(TOOLS_DIR32))/lib -Wl,-rpath-link,$(abspath $(TOOLS_DIR32))/lib" \
 			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig:/usr/lib32/pkgconfig \
 			CC=$(CC_QUOTED) \
@@ -2041,6 +2046,7 @@ $(WINEWIDL_CONFIGURE_FILES32): $(MAKEFILE_DEP) | $(WINEWIDL_OBJ32) $(WINEWIDL_DE
 			STRIP=$(STRIP_QUOTED) \
 			$(WINE_BISON32) \
 			CFLAGS=-I$(abspath $(TOOLS_DIR32))"/include -g $(COMMON_FLAGS)" \
+			CROSSCFLAGS="-g $(COMMON_FLAGS)" \
 			LDFLAGS=-L$(abspath $(TOOLS_DIR32))/lib \
 			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR32))/lib/pkgconfig \
 			CC=$(CC_QUOTED) \
@@ -2065,6 +2071,7 @@ $(WINEWIDL_CONFIGURE_FILES64): $(MAKEFILE_DEP) | $(WINEWIDL_OBJ64) $(WINEWIDL_DE
 			STRIP=$(STRIP_QUOTED) \
 			$(WINE_BISON64) \
 			CFLAGS=-I$(abspath $(TOOLS_DIR64))"/include -g $(COMMON_FLAGS)" \
+			CROSSCFLAGS="-g $(COMMON_FLAGS)" \
 			LDFLAGS=-L$(abspath $(TOOLS_DIR64))/lib \
 			PKG_CONFIG_PATH=$(abspath $(TOOLS_DIR64))/lib/pkgconfig \
 			CC=$(CC_QUOTED) \
