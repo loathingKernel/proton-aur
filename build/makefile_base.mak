@@ -65,7 +65,7 @@ endif
 
 CC32 := $(CC) -m32 -mstackrealign
 CXX32 := $(CXX) -m32 -mstackrealign
-PKG_CONFIG32 := i686-linux-gnu-pkg-config
+PKG_CONFIG32 := i686-pc-linux-gnu-pkg-config
 
 cc-option = $(shell if test -z "`echo 'void*p=1;' | \
               $(1) $(2) -S -o /dev/null -xc - 2>&1 | grep -- $(2) -`"; \
@@ -566,14 +566,14 @@ gst_orc64: SHELL = $(CONTAINER_SHELL)
 gst_orc64: $(GST_ORC_CONFIGURE_FILES64)
 	PATH="$(abspath $(TOOLS_DIR64))/bin:$(PATH)" \
 	LD_LIBRARY_PATH="$(abspath $(TOOLS_DIR64))/lib:$(LD_LIBRARY_PATH)" \
-	ninja -C "$(GST_ORC_OBJ64)" install
+	ninja -v -C "$(GST_ORC_OBJ64)" install
 	cp -a $(TOOLS_DIR64)/lib/liborc* $(DST_DIR)/lib64/
 
 gst_orc32: SHELL = $(CONTAINER_SHELL)
 gst_orc32: $(GST_ORC_CONFIGURE_FILES32)
 	PATH="$(abspath $(TOOLS_DIR32))/bin:$(PATH)" \
 	LD_LIBRARY_PATH="$(abspath $(TOOLS_DIR32))/lib:$(LD_LIBRARY_PATH)" \
-	ninja -C "$(GST_ORC_OBJ32)" install
+	ninja -v -C "$(GST_ORC_OBJ32)" install
 	cp -a $(TOOLS_DIR32)/lib/liborc* $(DST_DIR)/lib/
 
 ##
@@ -638,7 +638,7 @@ gstreamer64: SHELL = $(CONTAINER_SHELL)
 gstreamer64: $(GSTREAMER_CONFIGURE_FILES64)
 	PATH="$(abspath $(TOOLS_DIR64))/bin:$(PATH)" \
 	LD_LIBRARY_PATH="$(abspath $(TOOLS_DIR64))/lib:$(LD_LIBRARY_PATH)" \
-	ninja -C "$(GSTREAMER_OBJ64)" install
+	ninja -v -C "$(GSTREAMER_OBJ64)" install
 	cp -a $(TOOLS_DIR64)/lib/libgst* $(DST_DIR)/lib64/ && \
 	cp -a $(TOOLS_DIR64)/lib/gstreamer-1.0 $(DST_DIR)/lib64/
 
@@ -646,7 +646,7 @@ gstreamer32: SHELL = $(CONTAINER_SHELL)
 gstreamer32: $(GSTREAMER_CONFIGURE_FILES32)
 	PATH="$(abspath $(TOOLS_DIR32))/bin:$(PATH)" \
 	LD_LIBRARY_PATH="$(abspath $(TOOLS_DIR32))/lib:$(LD_LIBRARY_PATH)" \
-	ninja -C "$(GSTREAMER_OBJ32)" install
+	ninja -v -C "$(GSTREAMER_OBJ32)" install
 	cp -a $(TOOLS_DIR32)/lib/libgst* $(DST_DIR)/lib/ && \
 	cp -a $(TOOLS_DIR32)/lib/gstreamer-1.0 $(DST_DIR)/lib/
 
@@ -731,7 +731,7 @@ gst_base64: SHELL = $(CONTAINER_SHELL)
 gst_base64: $(GST_BASE_CONFIGURE_FILES64)
 	PATH="$(abspath $(TOOLS_DIR64))/bin:$(PATH)" \
 	LD_LIBRARY_PATH="$(abspath $(TOOLS_DIR64))/lib:$(LD_LIBRARY_PATH)" \
-	ninja -C "$(GST_BASE_OBJ64)" install
+	ninja -v -C "$(GST_BASE_OBJ64)" install
 	cp -a $(TOOLS_DIR64)/lib/libgst* $(DST_DIR)/lib64/ && \
 	cp -a $(TOOLS_DIR64)/lib/gstreamer-1.0 $(DST_DIR)/lib64/
 
@@ -739,7 +739,7 @@ gst_base32: SHELL = $(CONTAINER_SHELL)
 gst_base32: $(GST_BASE_CONFIGURE_FILES32)
 	PATH="$(abspath $(TOOLS_DIR32))/bin:$(PATH)" \
 	LD_LIBRARY_PATH="$(abspath $(TOOLS_DIR32))/lib:$(LD_LIBRARY_PATH)" \
-	ninja -C "$(GST_BASE_OBJ32)" install
+	ninja -v -C "$(GST_BASE_OBJ32)" install
 	cp -a $(TOOLS_DIR32)/lib/libgst* $(DST_DIR)/lib/ && \
 	cp -a $(TOOLS_DIR32)/lib/gstreamer-1.0 $(DST_DIR)/lib/
 
@@ -848,7 +848,7 @@ gst_good64: SHELL = $(CONTAINER_SHELL)
 gst_good64: $(GST_GOOD_CONFIGURE_FILES64)
 	PATH="$(abspath $(TOOLS_DIR64))/bin:$(PATH)" \
 	LD_LIBRARY_PATH="$(abspath $(TOOLS_DIR64))/lib:$(LD_LIBRARY_PATH)" \
-	ninja -C "$(GST_GOOD_OBJ64)" install
+	ninja -v -C "$(GST_GOOD_OBJ64)" install
 	cp -a $(TOOLS_DIR64)/lib/libgst* $(DST_DIR)/lib64/ && \
 	cp -a $(TOOLS_DIR64)/lib/gstreamer-1.0 $(DST_DIR)/lib64/
 
@@ -856,7 +856,7 @@ gst_good32: SHELL = $(CONTAINER_SHELL)
 gst_good32: $(GST_GOOD_CONFIGURE_FILES32)
 	PATH="$(abspath $(TOOLS_DIR32))/bin:$(PATH)" \
 	LD_LIBRARY_PATH="$(abspath $(TOOLS_DIR32))/lib:$(LD_LIBRARY_PATH)" \
-	ninja -C "$(GST_GOOD_OBJ32)" install
+	ninja -v -C "$(GST_GOOD_OBJ32)" install
 	cp -a $(TOOLS_DIR32)/lib/libgst* $(DST_DIR)/lib/ && \
 	cp -a $(TOOLS_DIR32)/lib/gstreamer-1.0 $(DST_DIR)/lib/
 
@@ -886,6 +886,7 @@ $(FAUDIO_CONFIGURE_FILES32): $(FAUDIO)/CMakeLists.txt $(MAKEFILE_DEP) gst_base32
 		CC="$(CC32)" \
 		CXX="$(CXX32)" \
 		PKG_CONFIG="$(PKG_CONFIG32)" \
+		CFLAGS="$(OPTIMIZE_FLAGS)" \
 		cmake $(abspath $(FAUDIO)) \
 			-DCMAKE_INSTALL_PREFIX="$(abspath $(TOOLS_DIR32))" \
 			$(FAUDIO_CMAKE_FLAGS)
@@ -1452,7 +1453,7 @@ $(DXVK_CONFIGURE_FILES64): $(MAKEFILE_DEP) $(DXVK)/build-win64.txt wineopenxr64 
 	fi
 	cd "$(abspath $(DXVK))" && \
 	PATH="$(abspath $(SRCDIR))/glslang/bin/:$(PATH)" \
-		meson --prefix="$(abspath $(DXVK_OBJ64))" --cross-file "$(abspath $(DXVK))/build-win64.txt" $(MESON_STRIP_ARG) --optimization=3 --buildtype=release "$(abspath $(DXVK_OBJ64))"
+		meson --prefix="$(abspath $(DXVK_OBJ64))" --cross-file "$(abspath $(DXVK))/build-win64.txt" $(MESON_STRIP_ARG) --buildtype=release "$(abspath $(DXVK_OBJ64))"
 
 # 32-bit configure.  Remove coredata file if already configured (due to e.g. makefile changing)
 $(DXVK_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL)
@@ -1462,7 +1463,7 @@ $(DXVK_CONFIGURE_FILES32): $(MAKEFILE_DEP) $(DXVK)/build-win32.txt | $(DXVK_OBJ3
 	fi
 	cd "$(abspath $(DXVK))" && \
 	PATH="$(abspath $(SRCDIR))/glslang/bin/:$(PATH)" \
-		meson --prefix="$(abspath $(DXVK_OBJ32))" --cross-file "$(abspath $(DXVK))/build-win32.txt" $(MESON_STRIP_ARG) --optimization=3 --buildtype=release "$(abspath $(DXVK_OBJ32))"
+		meson --prefix="$(abspath $(DXVK_OBJ32))" --cross-file "$(abspath $(DXVK))/build-win32.txt" $(MESON_STRIP_ARG) --buildtype=release "$(abspath $(DXVK_OBJ32))"
 
 ## dxvk goals
 DXVK_TARGETS = dxvk dxvk_configure dxvk32 dxvk64 dxvk_configure32 dxvk_configure64
@@ -1482,7 +1483,7 @@ dxvk: dxvk32 dxvk64
 
 dxvk64: SHELL = $(CONTAINER_SHELL)
 dxvk64: $(DXVK_CONFIGURE_FILES64)
-	env PATH="$(abspath $(SRCDIR))/glslang/bin/:$(PATH)" ninja -C "$(DXVK_OBJ64)" -v install
+	env PATH="$(abspath $(SRCDIR))/glslang/bin/:$(PATH)" ninja -v -C "$(DXVK_OBJ64)" install
 	mkdir -p "$(DST_DIR)/lib64/wine/dxvk"
 	cp -f "$(DXVK_OBJ64)"/bin/dxgi.dll "$(DST_DIR)"/lib64/wine/dxvk
 	cp -f "$(DXVK_OBJ64)"/bin/d3d11.dll "$(DST_DIR)"/lib64/wine/dxvk
@@ -1496,7 +1497,7 @@ dxvk64: $(DXVK_CONFIGURE_FILES64)
 
 dxvk32: SHELL = $(CONTAINER_SHELL)
 dxvk32: $(DXVK_CONFIGURE_FILES32)
-	env PATH="$(abspath $(SRCDIR))/glslang/bin/:$(PATH)" ninja -C "$(DXVK_OBJ32)" -v install
+	env PATH="$(abspath $(SRCDIR))/glslang/bin/:$(PATH)" ninja -v -C "$(DXVK_OBJ32)" install
 	mkdir -p "$(DST_DIR)"/lib/wine/dxvk
 	cp -f "$(DXVK_OBJ32)"/bin/dxgi.dll "$(DST_DIR)"/lib/wine/dxvk/
 	cp -f "$(DXVK_OBJ32)"/bin/d3d11.dll "$(DST_DIR)"/lib/wine/dxvk/
@@ -1524,7 +1525,7 @@ $(VKD3D_CONFIGURE_FILES32): $(VKD3D)/meson.build $(VKD3D)/build-win32.txt | $(VK
 
 vkd3d32: SHELL = $(CONTAINER_SHELL)
 vkd3d32: $(VKD3D_CONFIGURE_FILES32)
-	ninja -C "$(VKD3D_OBJ32)" install
+	ninja -v -C "$(VKD3D_OBJ32)" install
 	mkdir -p "$(DST_DIR)"/lib/wine/vkd3d-proton
 	cp -af "$(VKD3D_OBJ32)/bin/d3d12.dll" "$(DST_DIR)"/lib/wine/vkd3d-proton/
 	rm -f "$(DST_DIR)"/lib/wine/vkd3d-proton/version && if test -e $(SRCDIR)/.git; then ( cd $(SRCDIR) && git submodule status -- vkd3d-proton ) > "$(DST_DIR)"/lib/wine/vkd3d-proton/version; fi
@@ -1541,7 +1542,7 @@ $(VKD3D_CONFIGURE_FILES64): $(VKD3D)/meson.build $(VKD3D)/build-win64.txt | $(VK
 
 vkd3d64: SHELL = $(CONTAINER_SHELL)
 vkd3d64: $(VKD3D_CONFIGURE_FILES64)
-	ninja -C "$(VKD3D_OBJ64)" install
+	ninja -v -C "$(VKD3D_OBJ64)" install
 	mkdir -p "$(DST_DIR)"/lib64/wine/vkd3d-proton
 	cp -af "$(VKD3D_OBJ64)/bin/d3d12.dll" "$(DST_DIR)"/lib64/wine/vkd3d-proton/
 	rm -f "$(DST_DIR)"/lib64/wine/vkd3d-proton/version && if test -e $(SRCDIR)/.git; then ( cd $(SRCDIR) && git submodule status -- vkd3d-proton ) > "$(DST_DIR)"/lib64/wine/vkd3d-proton/version; fi
