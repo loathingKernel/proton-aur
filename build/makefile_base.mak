@@ -454,8 +454,8 @@ ALL_TARGETS += dist
 GOAL_TARGETS += dist
 
 dist_prefix: wine gst_good
-	find $(DST_DIR)/lib/wine -type f -execdir chmod a-w '{}' '+'
-	find $(DST_DIR)/lib64/wine -type f -execdir chmod a-w '{}' '+'
+	find $(DST_DIR)/lib/wine -type f -execdir chmod go-w '{}' '+'
+	find $(DST_DIR)/lib64/wine -type f -execdir chmod go-w '{}' '+'
 	rm -rf $(abspath $(DIST_PREFIX))
 	python3 $(SRCDIR)/default_pfx.py $(abspath $(DIST_PREFIX)) $(abspath $(DST_DIR)) $(STEAM_RUNTIME_RUNSH)
 
