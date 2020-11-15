@@ -392,7 +392,7 @@ downloads: $(SHARED_BISON_TARBALL) $(SHARED_GECKO64_TARBALL) $(SHARED_GECKO32_TA
 $(DST_DIR):
 	mkdir -p $@
 
-STEAM_DIR := $(HOME)/.steam/root
+STEAM_DIR ?= $(HOME)/.steam/root
 
 TOOLMANIFEST_TARGET := $(addprefix $(DST_BASE)/,toolmanifest.vdf)
 $(TOOLMANIFEST_TARGET): $(addprefix $(SRCDIR)/,toolmanifest.vdf)
