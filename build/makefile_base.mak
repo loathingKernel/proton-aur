@@ -1250,6 +1250,7 @@ $(WINE_CONFIGURE_FILES64): $(MAKEFILE_DEP) | faudio64 jxrlib64 gst_base64 $(WINE
 			--with-gstreamer \
 			--with-faudio \
 			--without-curses \
+			--without-vkd3d \
 			--without-oss \
 			--disable-win16 \
 			--enable-win64 \
@@ -1276,6 +1277,7 @@ $(WINE_CONFIGURE_FILES32): $(MAKEFILE_DEP) | faudio32 jxrlib32 gst_base32 $(WINE
 			--with-gstreamer \
 			--with-faudio \
 			--without-curses \
+			--without-vkd3d \
 			--without-oss \
 			--disable-win16 \
 			--disable-tests \
