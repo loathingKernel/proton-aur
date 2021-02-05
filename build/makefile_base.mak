@@ -1522,7 +1522,7 @@ $(VKD3D_CONFIGURE_FILES32): $(VKD3D)/meson.build $(VKD3D)/build-win32.txt | $(VK
 			meson --prefix="$(abspath $(VKD3D_OBJ32))" \
 				--cross-file "$(abspath $(VKD3D))/build-win32.txt" \
 				$(MESON_STRIP_ARG) \
-				--buildtype=release -Denable_standalone_d3d12=true \
+				--buildtype=release -Denable_d3d12=true \
 				"$(abspath $(VKD3D))"
 
 vkd3d32: SHELL = $(CONTAINER_SHELL)
@@ -1539,7 +1539,7 @@ $(VKD3D_CONFIGURE_FILES64): $(VKD3D)/meson.build $(VKD3D)/build-win64.txt | $(VK
 			meson --prefix="$(abspath $(VKD3D_OBJ64))" \
 				--cross-file "$(abspath $(VKD3D))/build-win64.txt" \
 				$(MESON_STRIP_ARG) \
-				--buildtype=release -Denable_standalone_d3d12=true \
+				--buildtype=release -Denable_d3d12=true \
 				"$(abspath $(VKD3D))"
 
 vkd3d64: SHELL = $(CONTAINER_SHELL)
