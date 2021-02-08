@@ -236,11 +236,9 @@ WINE_OUT_SERVER := $(DST_DIR)/bin/wineserver
 WINE_OUT := $(WINE_OUT_BIN) $(WINE_OUT_SERVER)
 # Tool-only build outputs needed for other projects
 WINEGCC32 := $(TOOLS_DIR32)/bin/winegcc
-WINEGXX32 := $(TOOLS_DIR32)/bin/wineg++
 WINEBUILD32 := $(TOOLS_DIR32)/bin/winebuild
 WINE_BUILDTOOLS32 := $(WINEGCC32) $(WINEBUILD32)
 WINEGCC64 := $(TOOLS_DIR64)/bin/winegcc
-WINEGXX64 := $(TOOLS_DIR64)/bin/wineg++
 WINEBUILD64 := $(TOOLS_DIR64)/bin/winebuild
 WINE_BUILDTOOLS64 := $(WINEGCC64) $(WINEBUILD64)
 
@@ -1249,6 +1247,7 @@ $(WINE_CONFIGURE_FILES64): $(MAKEFILE_DEP) | faudio64 jxrlib64 gst_base64 $(WINE
 			--with-x \
 			--with-gstreamer \
 			--with-faudio \
+			--with-mingw \
 			--without-curses \
 			--without-vkd3d \
 			--without-oss \
@@ -1276,6 +1275,7 @@ $(WINE_CONFIGURE_FILES32): $(MAKEFILE_DEP) | faudio32 jxrlib32 gst_base32 $(WINE
 			--with-x \
 			--with-gstreamer \
 			--with-faudio \
+			--with-mingw \
 			--without-curses \
 			--without-vkd3d \
 			--without-oss \
