@@ -513,6 +513,7 @@ GST_COMMON_MESON_ARGS := \
 
 GST_ORC_MESON_ARGS := \
 	$(GST_COMMON_MESON_ARGS) \
+	-Dpackage-name="GStreamer Orc (Proton)" \
 	-Dorc-test=disabled
 
 
