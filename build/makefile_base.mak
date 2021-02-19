@@ -36,7 +36,6 @@ endif
 ifeq ($(ENABLE_CCACHE),1)
 	CCACHE_BIN := ccache
 else
-	export CCACHE_DISABLE = 1
 	DOCKER_CCACHE_FLAG = -e CCACHE_DISABLE=1
 endif
 
