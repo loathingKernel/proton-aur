@@ -21,9 +21,9 @@ $$(OBJ)/.$(1)-configure$(3): $$(OBJ)/.$(1)-pre-configure
 	    --prefix="$$($(2)_DST$(3))" \
 	    --libdir="$$($(2)_DST$(3))/lib$(subst 32,,$(3))" \
 	    $$($(2)_ENV$(3)) \
-	    CROSSCFLAGS="$$(COMMON_FLAGS)" \
-	    CROSSCXXFLAGS="$$(COMMON_FLAGS) -std=c++17" \
-	    CROSSLDFLAGS="$$(CROSSLDFLAGS)" \
+	    CROSSCFLAGS="$$($(2)_CFLAGS) $$(COMMON_FLAGS)" \
+	    CROSSCXXFLAGS="$$($(2)_CXXFLAGS) $$(COMMON_FLAGS) -std=c++17" \
+	    CROSSLDFLAGS="$$($(2)_LDFLAGS) $$(CROSSLDFLAGS)" \
 	    $$($(2)_CONFIGURE_ARGS) \
 	    $$($(2)_CONFIGURE_ARGS$(3))
 
@@ -32,9 +32,9 @@ $$(OBJ)/.$(1)-configure$(3): $$(OBJ)/.$(1)-pre-configure
 $$(OBJ)/.$(1)-build$(3):
 	@echo ":: building $(3)bit $(1)..." >&2
 	cd "$$($(2)_OBJ$(3))" && env $$($(2)_ENV$(3)) \
-	$$(MAKE)
+	$$(MAKE) -j$$(SUBJOBS)
 	cd "$$($(2)_OBJ$(3))" && env $$($(2)_ENV$(3)) \
-	$$(MAKE) install
+	$$(MAKE) -j$$(SUBJOBS) install
 	touch $$@
 endif
 endef

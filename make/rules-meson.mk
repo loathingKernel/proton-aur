@@ -12,9 +12,9 @@ $$(OBJ)/.$(1)-configure$(3): $$($(2)_SRC)/meson.build
 	rm -rf "$$($(2)_OBJ$(3))/meson-private/coredata.dat"
 
 	grep -s -v -e c_args -e cpp_args -e link_args "$$($(2)_SRC)/build-win$(3).txt" | \
-	sed -e "s:\[properties\]:[properties]\nc_args = [$$(call list-quote,$$(COMMON_FLAGS))]:" \
-	    -e "s:\[properties\]:[properties]\ncpp_args = [$$(call list-quote,$$(COMMON_FLAGS))]:" \
-	    -e "s:\[properties\]:[properties]\nlink_args = [$$(call list-quote,$$(CROSSLDFLAGS))]:" \
+	sed -e "s:\[properties\]:[properties]\nc_args = [$$(call list-quote,$$($(2)_CPPFLAGS) $$(COMMON_FLAGS))]:" \
+	    -e "s:\[properties\]:[properties]\ncpp_args = [$$(call list-quote,$$($(2)_CPPFLAGS) $$(COMMON_FLAGS))]:" \
+	    -e "s:\[properties\]:[properties]\nlink_args = [$$(call list-quote,$$($(2)_LDFLAGS) $$(CROSSLDFLAGS))]:" \
 	  > "$$($(2)_OBJ$(3))/build-win$(3).txt"
 
 	env $$($(2)_ENV$(3)) \
@@ -31,7 +31,7 @@ $$(OBJ)/.$(1)-configure$(3): $$($(2)_SRC)/meson.build
 $$(OBJ)/.$(1)-build$(3):
 	@echo ":: building $(3)bit $(1)..." >&2
 	env $$($(2)_ENV$(3)) \
-	ninja $$(filter -j%,$$(MAKEFLAGS)) -C "$$($(2)_OBJ$(3))" install $(-v?)
+	ninja -j$$(SUBJOBS) -C "$$($(2)_OBJ$(3))" install $(-v?)
 	touch $$@
 endif
 endef
