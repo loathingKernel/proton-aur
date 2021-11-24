@@ -62,7 +62,6 @@ ifeq ($(ENABLE_CCACHE),1)
 	export CCACHE_DIR := $(if $(CCACHE_DIR),$(CCACHE_DIR),$(HOME)/.ccache)
 	override DOCKER_OPTS := -v $(CCACHE_DIR):$(CCACHE_DIR)$(CONTAINER_MOUNT_OPTS) $(CCACHE_ENV) -e CCACHE_DIR=$(CCACHE_DIR) $(DOCKER_OPTS)
 else
-	export CCACHE_DISABLE := 1
 	override DOCKER_OPTS := $(CCACHE_ENV) -e CCACHE_DISABLE=1 $(DOCKER_OPTS)
 endif
 
@@ -120,7 +119,7 @@ container-build:
 all32 $(MAKECMDGOALS32): container-build
 all64 $(MAKECMDGOALS64): container-build
 else
-J = $(patsubst -j%,%,$(filter -j%,$(MAKEFLAGS)))
+J = $(patsubst -j%,%,$(SUBJOBS))
 endif
 
 
@@ -170,11 +169,12 @@ else
 endif
 
 CROSSLDFLAGS   += -Wl,--file-alignment,4096
-OPTIMIZE_FLAGS := -O2 -march=nocona -mtune=core-avx2 -mfpmath=sse
+CFLAGS         ?= -O2 -march=nocona -mtune=core-avx2
+OPTIMIZE_FLAGS := $(CFLAGS) -mfpmath=sse
 SANITY_FLAGS   := -fwrapv -fno-strict-aliasing
 DEBUG_FLAGS    := -gdwarf-2 -gstrict-dwarf
 COMMON_FLAGS    = $(DEBUG_FLAGS) $(OPTIMIZE_FLAGS) $(SANITY_FLAGS) -ffile-prefix-map=$(CCACHE_BASEDIR)=.
-COMMON_FLAGS32 := -mstackrealign
+COMMON_FLAGS32 := -mstackrealign -mno-avx
 CARGO_BUILD_ARG := --release
 
 ##
@@ -354,8 +354,8 @@ ALL_TARGETS += dist
 GOAL_TARGETS += dist
 
 dist_prefix: wine gst_good
-	find $(DST_LIBDIR32)/wine -type f -execdir chmod a-w '{}' '+'
-	find $(DST_LIBDIR64)/wine -type f -execdir chmod a-w '{}' '+'
+	find $(DST_LIBDIR32)/wine -type f -execdir chmod go-w '{}' '+'
+	find $(DST_LIBDIR64)/wine -type f -execdir chmod go-w '{}' '+'
 	rm -rf $(abspath $(DIST_PREFIX))
 	python3 $(SRCDIR)/default_pfx.py $(abspath $(DIST_PREFIX)) $(abspath $(DST_DIR)) $(STEAM_RUNTIME_RUNSH)
 
@@ -408,6 +408,9 @@ endif # ifeq ($(CONTAINER),)
 ##
 
 GST_COMMON_MESON_ARGS := \
+	-Db_lto=true \
+	-Db_pie=true \
+	-Ddoc=disabled \
 	-Dexamples=disabled \
 	-Dtests=disabled \
 	-Dgtk_doc=disabled \
@@ -420,6 +423,7 @@ GST_COMMON_MESON_ARGS := \
 
 GST_ORC_MESON_ARGS := \
 	-Dorc-test=disabled \
+	-Dpackage-name="GStreamer Orc (Proton)" \
 	$(GST_COMMON_MESON_ARGS)
 
 $(eval $(call rules-source,gst_orc,$(SRCDIR)/gst-orc))
@@ -436,6 +440,9 @@ GSTREAMER_MESON_ARGS := \
 	-Dbenchmarks=disabled \
 	-Dtools=disabled \
 	-Dbash-completion=disabled \
+	-Dptp-helper-permissions=capabilities \
+	-Ddbghelp=disabled \
+	-Dpackage-name="GStreamer (Proton)" \
 	$(GST_COMMON_MESON_ARGS)
 
 GSTREAMER_DEPENDS = gst_orc
@@ -474,6 +481,7 @@ GST_BASE_MESON_ARGS := \
 	-Dxshm=disabled \
 	-Dxvideo=disabled \
 	-Dtools=disabled \
+	-Dpackage-name="GStreamer Base Plugins (Proton)" \
 	$(GST_COMMON_MESON_ARGS)
 
 GST_BASE_DEPENDS = gst_orc gstreamer
@@ -535,6 +543,7 @@ GST_GOOD_MESON_ARGS := \
 	-Dximagesrc=disabled \
 	-Dy4m=disabled \
 	-Dtools=disabled \
+	-Dpackage-name="GStreamer Good Plugins (Proton)" \
 	$(GST_COMMON_MESON_ARGS)
 
 GST_GOOD_DEPENDS = gst_orc gstreamer gst_base
@@ -693,9 +702,19 @@ WINE_SOURCE_ARGS = \
   --exclude include/config.h.in \
 
 WINE_CONFIGURE_ARGS = \
+  --with-x \
+  --with-gstreamer \
+  --with-faudio \
   --with-mingw \
   --without-xpresent \
+  --without-ldap \
+  --without-vkd3d \
+  --without-oss \
+  --disable-win16 \
   --disable-tests
+
+WINE_CFLAGS= -fno-builtin-sin -fno-builtin-sinf -fno-builtin-cos -fno-builtin-cosf
+WINE_CXXFLAGS= -fno-builtin-sin -fno-builtin-sinf -fno-builtin-cos -fno-builtin-cosf
 
 WINE_CONFIGURE_ARGS64 = --enable-win64
 
@@ -756,6 +775,9 @@ $(OBJ)/.vrclient-post-source:
 DXVK_MESON_ARGS32 = --bindir=$(DXVK_DST32)/lib/wine/dxvk
 DXVK_MESON_ARGS64 = --bindir=$(DXVK_DST64)/lib64/wine/dxvk
 
+DXVK_CPPFLAGS= -msse -msse2
+DXVK_LDFLAGS= -static -static-libgcc -static-libstdc++
+
 $(eval $(call rules-source,dxvk,$(SRCDIR)/dxvk))
 $(eval $(call rules-meson,dxvk,32,CROSS))
 $(eval $(call rules-meson,dxvk,64,CROSS))
@@ -777,6 +799,9 @@ $(OBJ)/.dxvk-post-build32:
 
 DXVK_NVAPI_MESON_ARGS32 = --bindir=$(DXVK_NVAPI_DST32)/lib/wine/nvapi
 DXVK_NVAPI_MESON_ARGS64 = --bindir=$(DXVK_NVAPI_DST64)/lib64/wine/nvapi
+
+DXVK_NVAPI_CPPFLAGS= -msse -msse2
+DXVK_NVAPI_LDFLAGS= -static -static-libgcc -static-libstdc++
 
 $(eval $(call rules-source,dxvk-nvapi,$(SRCDIR)/dxvk-nvapi))
 $(eval $(call rules-meson,dxvk-nvapi,32,CROSS))
@@ -841,9 +866,12 @@ VKD3D_PROTON_SOURCE_ARGS = \
   --exclude vkd3d_build.h.in \
   --exclude vkd3d_version.h.in \
 
-VKD3D_PROTON_MESON_ARGS = -Denable_standalone_d3d12=true
+VKD3D_PROTON_MESON_ARGS = -Denable_d3d12=true
 VKD3D_PROTON_MESON_ARGS32 = --bindir=$(VKD3D_PROTON_DST32)/lib/wine/vkd3d-proton
 VKD3D_PROTON_MESON_ARGS64 = --bindir=$(VKD3D_PROTON_DST64)/lib64/wine/vkd3d-proton
+
+VKD3D_PROTON_CPPFLAGS= -msse -msse2
+VKD3D_PROTON_LDFLAGS= -static -static-libgcc -static-libstdc++
 
 $(eval $(call rules-source,vkd3d-proton,$(SRCDIR)/vkd3d-proton))
 $(eval $(call rules-meson,vkd3d-proton,32,CROSS))
