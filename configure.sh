@@ -126,6 +126,7 @@ function configure() {
     CONTAINER_MOUNT_OPTS=:Z
   fi
 
+  if [ "$arg_container_engine" != "none" ]; then
   if [[ -n "$arg_container_engine" ]]; then
     check_container_engine "$arg_container_engine" || die "Specified container engine \"$arg_container_engine\" doesn't work"
   else
@@ -137,6 +138,7 @@ function configure() {
     else
         die "${arg_container_engine:-Container engine discovery} has failed. Please fix your setup."
     fi
+  fi
   fi
 
   stat "Using $arg_container_engine."
