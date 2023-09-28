@@ -1,11 +1,15 @@
 #include <stdarg.h>
 #include <stddef.h>
 
+extern "C" {
 #include <windef.h>
 #include <winbase.h>
+}
 
 #undef wcsncpy
+extern "C" {
 #include <windows.h>
+}
 #include <wine/debug.h>
 
 WINE_DEFAULT_DEBUG_CHANNEL(vrclient);
