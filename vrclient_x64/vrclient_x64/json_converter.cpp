@@ -1,4 +1,6 @@
+extern "C" {
 #include <windows.h>
+}
 #include <wine/debug.h>
 
 WINE_DEFAULT_DEBUG_CHANNEL(vrclient);

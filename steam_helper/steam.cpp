@@ -34,7 +34,9 @@
 
 #include "ntstatus.h"
 #define WIN32_NO_STATUS
+extern "C" {
 #include <windows.h>
+}
 #include <winternl.h>
 #include <shlwapi.h>
 #include <shlobj.h>
